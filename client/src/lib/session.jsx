@@ -34,6 +34,10 @@ export function SessionProvider({ children }) {
       loading,
       modules: config?.modules ?? {},
       roles: config?.roles ?? {},
+      // The config fetch failing means the API is unreachable, not that every
+      // module is switched off. Screens that hide UI per module need to tell the
+      // two apart, or a dead server looks like a deliberately stripped app.
+      offline: !loading && config === null,
       async login(uid, password) {
         const { user: u, home } = await api.post('/auth/login', { uid, password });
         setUser(u);

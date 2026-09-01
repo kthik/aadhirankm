@@ -6,7 +6,7 @@ import { Brand, SettingsMenu } from '../components/Layout.jsx';
 import { Banner, Field } from '../components/ui.jsx';
 
 export default function Login() {
-  const { login, modules } = useSession();
+  const { login, modules, offline } = useSession();
   const t = useT();
   const navigate = useNavigate();
   const [form, setForm] = useState({ uid: '', password: '' });
@@ -40,6 +40,12 @@ export default function Login() {
           <p>{t('auth.signInHint', 'Use the UID issued at registration.')}</p>
 
           <Banner>{error}</Banner>
+          {offline && (
+            <Banner kind="warn">
+              Cannot reach the server, so registration is unavailable and sign-in will fail. Start
+              the API (npm run dev) and reload this page.
+            </Banner>
+          )}
 
           <div style={{ marginTop: error ? 14 : 0 }}>
             <Field
@@ -67,6 +73,7 @@ export default function Login() {
             <Link to="/forgot-uid">{t('auth.forgotUid', 'Forgot your UID?')}</Link>
             <div style={{ marginTop: 12 }}>
               {t('auth.newHere', 'New here?')}{' '}
+              {offline && <span className="muted">registration unavailable while the server is down</span>}
               {modules.academyRegistration && <Link to="/register/academy">{t('auth.registerAcademy', 'Register an academy')}</Link>}
               {modules.academyRegistration && modules.individualRegistration && ' · '}
               {modules.individualRegistration && (

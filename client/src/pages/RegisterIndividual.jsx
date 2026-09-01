@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { Brand, SettingsMenu } from '../components/Layout.jsx';
 import { Banner, Credential, EventPicker, Field, Modal } from '../components/ui.jsx';
+import TournamentPicker from '../components/TournamentPicker.jsx';
 
 const EMPTY = {
+  tournamentId: '',
   participantName: '',
   fatherName: '',
   age: '',
@@ -58,6 +60,11 @@ export default function RegisterIndividual() {
           <Banner>{error}</Banner>
 
           <div style={{ marginTop: error ? 14 : 0 }}>
+            <TournamentPicker
+              value={form.tournamentId}
+              onChange={(tournamentId) => setForm({ ...form, tournamentId })}
+              error={errors.tournamentId}
+            />
             <Field label="Participant name" value={form.participantName} onChange={set('participantName')} error={errors.participantName} />
             <Field label="Father's name" value={form.fatherName} onChange={set('fatherName')} error={errors.fatherName} />
             <div className="row two">

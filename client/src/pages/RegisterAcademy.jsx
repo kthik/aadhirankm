@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { Brand, SettingsMenu } from '../components/Layout.jsx';
 import { Banner, Credential, Field, Modal } from '../components/ui.jsx';
+import TournamentPicker from '../components/TournamentPicker.jsx';
 
-const EMPTY = { academyName: '', coachName: '', phone: '', address: '', location: '' };
+const EMPTY = { tournamentId: '', academyName: '', coachName: '', phone: '', address: '', location: '' };
 
 export default function RegisterAcademy() {
   const navigate = useNavigate();
@@ -45,6 +46,11 @@ export default function RegisterAcademy() {
           <Banner>{error}</Banner>
 
           <div style={{ marginTop: error ? 14 : 0 }}>
+            <TournamentPicker
+              value={form.tournamentId}
+              onChange={(tournamentId) => setForm({ ...form, tournamentId })}
+              error={errors.tournamentId}
+            />
             <Field label="Academy name" value={form.academyName} onChange={set('academyName')} error={errors.academyName} />
             <Field label="Coach name" value={form.coachName} onChange={set('coachName')} error={errors.coachName} />
             <div className="row two">

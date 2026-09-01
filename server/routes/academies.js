@@ -4,7 +4,7 @@ import { validate } from '../lib/validate.js';
 import { hashPassword, requireAuth, verifyPassword } from '../lib/auth.js';
 import { config, requireModule } from '../config.js';
 import { boutIdsFor } from '../lib/queue.js';
-import { currentTournamentId, inScope, scopeFor } from '../lib/tournament.js';
+import { inScope, registrationTournament, scopeFor } from '../lib/tournament.js';
 
 const router = Router();
 
@@ -24,6 +24,11 @@ router.post('/', requireModule('academyRegistration'), (req, res) => {
   const { ok, values, errors } = validate(req.body, ACADEMY_RULES);
   if (!ok) return res.status(400).json({ errors });
 
+  // The academy picks the competition it is entering; everything it goes on to
+  // register - its participants, their bouts and scores - inherits that tag.
+  const { tournamentId, error: tournamentError } = registrationTournament(req.body?.tournamentId);
+  if (tournamentError) return res.status(400).json({ errors: { tournamentId: tournamentError } });
+
   const duplicate = db.find(
     'Academy',
     (a) =>
@@ -40,7 +45,7 @@ router.post('/', requireModule('academyRegistration'), (req, res) => {
   const academy = {
     academyId,
     ...values,
-    tournamentId: currentTournamentId(),
+    tournamentId,
     active: true,
     createdAt: new Date().toISOString(),
   };

@@ -3,7 +3,7 @@ import { api } from '../lib/api.js';
 import Collapsible from './Collapsible.jsx';
 import { Banner, Field, Modal, Stat } from './ui.jsx';
 
-const EMPTY = { name: '', description: '', location: '', startDate: '', endDate: '' };
+const EMPTY = { name: '', description: '', location: '', address: '', startDate: '', endDate: '' };
 
 /**
  * Tournament management.
@@ -87,6 +87,13 @@ export default function TournamentAdmin() {
             <Field label="Name" value={form.name} onChange={set('name')} error={errors.name} />
             <Field label="Location" value={form.location} onChange={set('location')} error={errors.location} />
           </div>
+          <Field
+            label="Venue address"
+            error={errors.address}
+            hint="Shown to competitors on the registration form when they pick this tournament."
+          >
+            <textarea value={form.address} onChange={set('address')} />
+          </Field>
           <div className="row two">
             <Field label="Start date" type="date" value={form.startDate} onChange={set('startDate')} error={errors.startDate} />
             <Field
@@ -180,6 +187,7 @@ export default function TournamentAdmin() {
                               name: t.name,
                               description: t.description ?? '',
                               location: t.location ?? '',
+                              address: t.address ?? '',
                               startDate: t.startDate ?? '',
                               endDate: t.endDate ?? '',
                             });

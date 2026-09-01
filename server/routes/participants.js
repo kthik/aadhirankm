@@ -4,7 +4,7 @@ import { validate } from '../lib/validate.js';
 import { hashPassword, requireAuth } from '../lib/auth.js';
 import { config, requireModule } from '../config.js';
 import { addEntry, boutIdsFor, eventClashFor, removeEntry } from '../lib/queue.js';
-import { currentTournamentId, inScope, scopeFor } from '../lib/tournament.js';
+import { inScope, registrationTournament, scopeFor } from '../lib/tournament.js';
 
 const router = Router();
 
@@ -40,13 +40,13 @@ function resolveEvents(cell) {
     .map((token) => byName.get(token.toLowerCase()) ?? token.toUpperCase());
 }
 
-function createParticipant(values, academyId) {
+function createParticipant(values, academyId, tournamentId) {
   const participantId = db.nextId('Participants', 'participantId', 'INDIVIDUAL');
   const participant = {
     participantId,
     academyId,
     ...values,
-    tournamentId: currentTournamentId(),
+    tournamentId,
     active: true,
     createdAt: new Date().toISOString(),
   };
@@ -74,7 +74,11 @@ router.post('/individual', requireModule('individualRegistration'), (req, res) =
   const eventError = checkEvents(values.events);
   if (eventError) return res.status(400).json({ errors: { events: eventError } });
 
-  res.status(201).json(createParticipant(values, null));
+  // An individual entrant chooses their own competition.
+  const { tournamentId, error: tournamentError } = registrationTournament(req.body?.tournamentId);
+  if (tournamentError) return res.status(400).json({ errors: { tournamentId: tournamentError } });
+
+  res.status(201).json(createParticipant(values, null, tournamentId));
 });
 
 /**
@@ -98,7 +102,9 @@ router.post('/academy', requireAuth('ACADEMY'), (req, res) => {
   const eventError = checkEvents(values.events);
   if (eventError) return res.status(400).json({ errors: { events: eventError } });
 
-  res.status(201).json(createParticipant(values, academy.academyId));
+  // Filed under the academy's own tournament: a coach enrols into the
+  // competition their academy signed up for, so there is nothing to choose.
+  res.status(201).json(createParticipant(values, academy.academyId, academy.tournamentId ?? null));
 });
 
 const COLUMN_TO_FIELD = {
@@ -190,7 +196,9 @@ router.post('/bulk', requireAuth('ACADEMY'), requireModule('bulkUpload'), (req, 
     });
   }
 
-  const created = accepted.map((values) => createParticipant(values, academy.academyId));
+  const created = accepted.map((values) =>
+    createParticipant(values, academy.academyId, academy.tournamentId ?? null)
+  );
   res.status(201).json({
     importedCount: created.length,
     rejected: [],

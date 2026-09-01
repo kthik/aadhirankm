@@ -1,5 +1,5 @@
 import * as db from './store.js';
-import { config } from '../config.js';
+import { config, moduleEnabled } from '../config.js';
 
 /*
  * Tournaments, and the tournament tag every competition record carries.
@@ -55,6 +55,41 @@ export function autoDeactivateExpired(on = today()) {
     });
   }
   return expired.map((t) => t.tournamentId);
+}
+
+/**
+ * Tournaments open for registration: switched on and not yet finished, which
+ * includes one that has not started - a competition takes entries before its
+ * first day. Ordered soonest first, since that is what a registrant wants.
+ */
+export function openTournaments() {
+  return db
+    .filter('Tournaments', (t) => isRunning(t))
+    .sort((a, b) => String(a.startDate ?? '').localeCompare(String(b.startDate ?? '')));
+}
+
+/**
+ * The tournament a public registration is filed under.
+ *
+ * The registrant picks it, so an unknown or closed choice is a field error
+ * rather than a silent fallback - filing an entry under the wrong competition is
+ * worse than making someone choose again. With the tournaments module off, or
+ * with nothing open, there is no choice to make and the current tournament is
+ * used as before.
+ */
+export function registrationTournament(chosenId) {
+  if (!moduleEnabled('tournaments')) return { tournamentId: currentTournamentId() };
+
+  const open = openTournaments();
+  if (open.length === 0) return { tournamentId: currentTournamentId() };
+
+  if (!chosenId) return { error: 'Choose the tournament you are registering for' };
+
+  const chosen = open.find((t) => t.tournamentId === chosenId);
+  if (!chosen) {
+    return { error: 'That tournament is not open for registration. Pick one from the list.' };
+  }
+  return { tournamentId: chosen.tournamentId };
 }
 
 /** The tournament new records are filed under: the running one, most recent first. */

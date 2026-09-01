@@ -4,7 +4,13 @@ import { validate } from '../lib/validate.js';
 import { requireAuth } from '../lib/auth.js';
 import { requireModule } from '../config.js';
 import { log } from '../lib/audit.js';
-import { SCOPED, autoDeactivateExpired, isRunning, scopeFor } from '../lib/tournament.js';
+import {
+  SCOPED,
+  autoDeactivateExpired,
+  isRunning,
+  openTournaments,
+  scopeFor,
+} from '../lib/tournament.js';
 
 const router = Router();
 
@@ -16,6 +22,7 @@ const RULES = {
   name: { required: true, min: 3, label: 'Tournament name' },
   description: { required: false, label: 'Description', default: '' },
   location: { required: false, label: 'Location', default: '' },
+  address: { required: false, label: 'Venue address', default: '' },
   startDate: { required: true, label: 'Start date' },
   endDate: { required: false, label: 'End date', default: '' },
 };
@@ -44,6 +51,27 @@ function withCounts(t) {
     records: Object.values(counts).reduce((a, b) => a + b, 0),
   };
 }
+
+/**
+ * Open for registration, and public: the sign-up forms are reached before anyone
+ * has an account. Only the details a registrant needs to choose are exposed -
+ * no counts, no status bookkeeping.
+ */
+router.get('/open', (_req, res) => {
+  autoDeactivateExpired();
+
+  res.json({
+    tournaments: openTournaments().map((t) => ({
+      tournamentId: t.tournamentId,
+      name: t.name,
+      description: t.description ?? '',
+      location: t.location ?? '',
+      address: t.address ?? '',
+      startDate: t.startDate ?? '',
+      endDate: t.endDate ?? '',
+    })),
+  });
+});
 
 /**
  * Everyone signed in can read the tournament list — the dashboards label data
