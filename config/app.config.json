@@ -1,0 +1,117 @@
+{
+  "app": {
+    "name": "Veeran",
+    "tagline": "Silambam Competition Management",
+    "defaultPassword": "pass@123",
+    "defaultLanguage": "en",
+    "languages": [
+      "en",
+      "ta"
+    ]
+  },
+  "modules": {
+    "academyRegistration": true,
+    "individualRegistration": true,
+    "eventRegistration": true,
+    "bulkUpload": true,
+    "judging": true,
+    "scoring": true,
+    "analytics": true,
+    "realtime": false,
+    "multiLanguage": true,
+    "backupRestore": true,
+    "tournaments": true,
+    "adminManagement": true,
+    "systemLogs": true
+  },
+  "roles": {
+    "SUPER_ADMIN": {
+      "label": "Super Admin",
+      "home": "/super-admin",
+      "permissions": [
+        "*"
+      ]
+    },
+    "ADMIN": {
+      "label": "Admin",
+      "home": "/admin",
+      "permissions": [
+        "academy:*",
+        "participant:*",
+        "judge:*",
+        "event:read",
+        "export:*"
+      ]
+    },
+    "JUDGE": {
+      "label": "Judge",
+      "home": "/judge",
+      "permissions": [
+        "score:*",
+        "participant:read"
+      ]
+    },
+    "ACADEMY": {
+      "label": "Academy",
+      "home": "/academy",
+      "permissions": [
+        "participant:create",
+        "participant:read",
+        "self:update"
+      ]
+    },
+    "ACADEMY_PARTICIPANT": {
+      "label": "Academy Participant",
+      "home": "/participant",
+      "permissions": [
+        "self:read",
+        "self:update"
+      ]
+    },
+    "INDIVIDUAL": {
+      "label": "Individual",
+      "home": "/participant",
+      "permissions": [
+        "self:read",
+        "self:update"
+      ]
+    }
+  },
+  "idPrefixes": {
+    "ACADEMY": "A",
+    "INDIVIDUAL": "P",
+    "JUDGE": "J",
+    "ADMIN": "AD",
+    "EVENT": "E",
+    "BOUT": "B",
+    "SCORE": "S",
+    "AGE_CATEGORY": "AG",
+    "SCORE_CATEGORY": "SC",
+    "TOURNAMENT": "T",
+    "BACKUP": "BKP"
+  },
+  "theme": {
+    "mode": "dark",
+    "accent": "#ff8a3d",
+    "accent2": "#38e8ff"
+  },
+  "validation": {
+    "phonePattern": "^[6-9][0-9]{9}$",
+    "minAge": 4,
+    "maxAge": 80
+  },
+  "scoring": {
+    "maxCategories": 5,
+    "minScore": 0,
+    "maxScore": 10,
+    "rankingPositions": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "tournaments": {
+    "autoDeactivateAfterEndDate": true,
+    "checkIntervalHours": 24
+  }
+}
