@@ -167,3 +167,103 @@ export function Heatmap({ cells, onSelect }) {
     </div>
   );
 }
+
+/**
+ * Cumulative progress over time: registrations against filed sheets, one
+ * column pair per day.
+ *
+ * Two series, so the caller renders a legend; each column carries its own
+ * hover detail and the day axis is thinned to the ends and every nth label,
+ * because a competition week on a phone cannot show twenty date labels.
+ */
+export function TrendChart({ points, emptyText = 'Nothing recorded yet.' }) {
+  const [tip, setTip] = useState(null);
+  if (points.length === 0) return <div className="empty">{emptyText}</div>;
+
+  const max = Math.max(...points.map((p) => p.cumulativeRegistered), 1);
+  const every = Math.ceil(points.length / 6);
+
+  return (
+    <div className="trend" onMouseLeave={() => setTip(null)}>
+      <div className="trend-plot">
+        {points.map((p, i) => (
+          <div
+            key={p.day}
+            className="trend-col"
+            tabIndex={0}
+            onMouseEnter={() =>
+              setTip({
+                label: p.day,
+                lines: [
+                  `${p.cumulativeRegistered} registered to date (+${p.registered})`,
+                  `${p.cumulativeScored} scored to date (+${p.scored})`,
+                ],
+              })
+            }
+            onFocus={() =>
+              setTip({
+                label: p.day,
+                lines: [
+                  `${p.cumulativeRegistered} registered to date`,
+                  `${p.cumulativeScored} scored to date`,
+                ],
+              })
+            }
+          >
+            <span className="trend-bars">
+              <span
+                className="trend-bar reg"
+                style={{ height: `${(p.cumulativeRegistered / max) * 100}%` }}
+              />
+              <span
+                className="trend-bar done"
+                style={{ height: `${(p.cumulativeScored / max) * 100}%` }}
+              />
+            </span>
+            <span className="trend-day">
+              {i === 0 || i === points.length - 1 || i % every === 0 ? p.day.slice(5) : ''}
+            </span>
+          </div>
+        ))}
+      </div>
+      <Tip tip={tip} />
+    </div>
+  );
+}
+
+/**
+ * Completed-vs-waiting rows with a percentage, for the breakdown panels. The
+ * split bar carries the magnitude and the percentage is direct-labelled, so the
+ * rows stay readable without colour.
+ */
+export function SplitRows({ rows, emptyText = 'No entries yet.', onSelect }) {
+  const [tip, setTip] = useState(null);
+  if (rows.length === 0) return <div className="empty">{emptyText}</div>;
+
+  return (
+    <div className="chart" onMouseLeave={() => setTip(null)}>
+      {rows.map((r) => (
+        <div
+          key={r.id ?? r.label}
+          className="bar-row split-row"
+          tabIndex={0}
+          onClick={() => onSelect?.(r)}
+          onMouseEnter={() =>
+            setTip({
+              label: r.label,
+              lines: [
+                `${r.participants} competitor(s)`,
+                `${r.completed} scored, ${r.waiting} waiting`,
+              ],
+            })
+          }
+        >
+          <span className="bar-label" title={r.label}>{r.label}</span>
+          <ProgressBar completed={r.completed} waiting={r.waiting} />
+          <span className="bar-value">{r.completedPct}%</span>
+        </div>
+      ))}
+      <Tip tip={tip} />
+    </div>
+  );
+}

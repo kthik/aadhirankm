@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import path from 'node:path';
 import fs from 'node:fs';
 
-import { config, ROOT } from './config.js';
+import { config, dataDir, storageDriver, ROOT } from './config.js';
 import * as db from './lib/store.js';
 import { attachUser } from './lib/auth.js';
 import { seeds } from './seed.js';
@@ -25,6 +25,18 @@ import championRoutes from './routes/champions.js';
 import tournamentRoutes from './routes/tournaments.js';
 import adminRoutes from './routes/admins.js';
 import logRoutes from './routes/logs.js';
+import storageRoutes from './routes/storage.js';
+
+// storage.driver in app.config.json picks the database: local JSON files or the
+// synced Google Drive folder. An unreachable store is fatal, and reported as a
+// message rather than a stack trace, since the fix is always an operator one.
+try {
+  console.log(`Database: ${storageDriver()} -> ${dataDir()}`);
+  if (db.cacheStatus()) console.log(`Local cache: ${db.cacheStatus()}`);
+} catch (err) {
+  console.error(`\n${err.message}\n`);
+  process.exit(1);
+}
 
 db.ensureSeed(seeds());
 
@@ -89,6 +101,7 @@ app.use('/api/champions', championRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/storage', storageRoutes);
 
 // Serve the built SPA when it exists, so `npm run build && npm start` is one process.
 const dist = path.join(ROOT, 'client', 'dist');

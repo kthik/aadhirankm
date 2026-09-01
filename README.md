@@ -43,13 +43,134 @@ server/
   lib/validate.js        Declarative field validation, returns per-field errors
   routes/                auth, academies, participants, events, judges, scores,
                          masters (age/score categories, bouts), dashboard (analytics)
-  data/*.json            The database. Seeded on first boot, gitignored.
+  data/*.json            Local database, and the Drive cache under gdrive. Gitignored.
 client/src/
   lib/session.jsx        Session + config context
   components/            Tabs, charts, Field, EventPicker, Modal, BulkUpload,
                          ScoreSheet, JudgeAdmin, AdminAnalytics, ParticipantDrawer
   pages/                 Login, ForgotUid, registration, dashboards
 ```
+
+## Where the database lives
+
+One switch in `config/app.config.json` decides which database the server runs on:
+
+```json
+"storage": {
+  "driver": "local",
+  "local":  { "dataDir": "server/data" },
+  "gdrive": { "dataDir": "Veeran/data", "driveRoot": "", "cache": true }
+}
+```
+
+| `driver` | The database is |
+| --- | --- |
+| `"local"` | `storage.local.dataDir` on this machine (default `server/data`), and nothing else |
+| `"gdrive"` | `storage.gdrive.dataDir` inside the locally synced Google Drive folder, with the local folder kept as a cache of it |
+
+### Drive as the database, local JSON as cache
+
+Under the `gdrive` driver the app uses both folders. Drive holds the database; the
+local folder is a mirror of it:
+
+- **Reads** are served from the local copy, so no request waits on the Drive mount.
+  Before each read the Drive file's timestamp is compared with the cached one and
+  the newer Drive copy is pulled down - that is how a change another machine synced
+  up gets picked up.
+- **Writes** go to Drive first, then into the cache. If Drive is unreachable the
+  write fails and the request errors: an accepted write that existed only in the
+  cache would be lost the moment the cache refreshed. Mirroring into the cache is
+  best-effort, since a stale cache self-corrects on the next read.
+- **While Drive is offline** reads keep working from the cache and writes are
+  refused, so the app stays usable read-only instead of going down.
+
+Set `storage.gdrive.cache` to `false` to read and write the Drive folder directly
+with no local copy. The cache folder is `storage.local.dataDir` - the same files the
+`local` driver uses as its database, which is what makes flipping the driver cheap.
+
+It ships as `"local"`, so a fresh clone runs with no Drive client installed. Both
+blocks stay in the file, so flipping is a one-word edit plus a restart, and the
+active driver and resolved folder are printed on boot:
+
+```
+Database: gdrive -> C:\Users\me\My Drive\Veeran\data
+Local cache: ...\Veeran\server\data
+```
+
+Set `driver` to `gdrive` only on a machine that has Drive for desktop: the API exits
+at boot when the Drive folder is missing, and with the API down the Vite dev proxy
+answers every `/api` call with a 500 - in the browser that looks like a failed login
+rather than a storage problem. The API's own console prints the real reason.
+
+`gdrive` needs Google Drive for desktop installed and signed in. The Drive root is
+auto-detected (`~/Google Drive/My Drive`, `~/Google Drive`, `~/My Drive`, and the
+Drive for desktop virtual drives `G:\My Drive` and up); set
+`storage.gdrive.driveRoot` if it is mounted somewhere else. With no Drive folder
+found, the server prints what to fix and exits rather than quietly writing a second
+copy of the database to local disk. An unknown driver name fails the same way.
+
+**Switching local -> gdrive** copies the local collections into the Drive folder on
+the first boot, so the current tournament carries over. It only runs into a Drive
+folder that holds no collection file yet, so it can never overwrite live data.
+**Switching gdrive -> local** copies nothing - but because the cache folder *is* the
+local database, the local files already hold everything the last gdrive session read
+or wrote, so the flip lands on current data as long as that session was live.
+
+Env vars override the config file for a one-off run, without editing it:
+
+| Variable | Effect |
+| --- | --- |
+| `VEERAN_DB_DRIVER=local` | run on the other driver once (e.g. dev on a machine with no Drive) |
+| `VEERAN_DATA_DIR=/srv/veeran` | ignore both drivers and use this one folder, uncached |
+| `VEERAN_GDRIVE_DIR` | where the synced Drive folder is mounted |
+| `VEERAN_CONFIG_PATH` | where `app.config.json` itself lives |
+
+Paths in the config or those vars accept absolute or repo-relative forms, `~`, and
+`%VAR%` / `$VAR`. Everything is resolved once at startup; a live swap would split
+writes across two databases, so changing the driver needs a restart.
+
+> Drive syncs whole files rather than merging them, so run one server against a Drive
+> folder at a time - two writers produce a Drive conflict copy, not a merge.
+
+## Super Admin dashboard
+
+Three tabs of its own, on top of admins, tournaments, backup, logs and events:
+
+- **Overview** - one filter bar (tournament, event, age category, academy, registered
+  between two dates) drives every panel below it: headline figures, scoring progress
+  split by event / age band / academy, a cumulative registered-vs-scored trend, and a
+  card per tournament carrying the same measures for that tournament alone. One
+  `/api/dashboard/overview` call feeds all of it, so no two panels can disagree.
+  Picking a tournament narrows the page to that card rather than emptying the others.
+- **Database** - where the JSON lives, and how to move it. See below.
+
+Every figure is derived per request from participants and their filed sheets, so
+nothing here can go stale against the tables it came from.
+
+### Moving the database from the Super Admin screen
+
+The Database tab shows the folder in use, the driver, the local cache (under
+`gdrive`), and how many rows and Super Admin logins are in it. Changing location is
+deliberately three steps:
+
+1. **Check location** resolves the new spec and reports what is already in that
+   folder - nothing is written.
+2. **Save location** opens a dialog stating where the data is going, what is there
+   now, and asking the one question that matters: *copy the current data across?*
+3. The change applies only with the acting Super Admin's own **password**.
+
+The copy question is enforced, not advisory:
+
+| Situation | What happens |
+| --- | --- |
+| Copy accepted | Every collection is written to the new folder, then the app switches to it |
+| Copy accepted, folder already holds data | Blocked until the "will be replaced" box is ticked |
+| Copy declined, folder **has** a Super Admin login | Allowed, with an alert that the old data stays behind and is no longer read |
+| Copy declined, folder has **no** Super Admin login | **Refused**, in the dialog and again on the server: nobody could sign in afterwards and the real database would be stranded at the old path |
+
+Nothing is ever deleted from the old folder, the switch is logged to System logs, and
+the running server repoints without a restart. Environment overrides still win over
+the config file, and the panel says so when one is set.
 
 ## Plug and play
 

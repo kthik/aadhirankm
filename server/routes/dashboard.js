@@ -67,6 +67,207 @@ function decorate(p, snap) {
   };
 }
 
+/* ------------------------------------------------------------- overview -- */
+
+/*
+ * The Super Admin infographic: one overall rollup, the same rollup per
+ * tournament, and a cumulative progress trend - all under one set of filters.
+ *
+ * Every measure is derived from participants and their filed sheets on each
+ * request, so a figure here can never disagree with the tables it came from.
+ */
+
+function overviewFilters(query) {
+  return {
+    tournamentId: query.tournamentId || '',
+    eventId: query.eventId || '',
+    ageCategoryId: query.ageCategoryId || '',
+    academyId: query.academyId || '',
+    from: query.from || '',
+    to: query.to || '',
+  };
+}
+
+function applyFilters(rows, f) {
+  let out = rows;
+  if (f.tournamentId) out = out.filter((r) => r.tournamentId === f.tournamentId);
+  if (f.eventId) out = out.filter((r) => r.events.includes(f.eventId));
+  if (f.ageCategoryId) out = out.filter((r) => r.ageCategoryId === f.ageCategoryId);
+  if (f.academyId) {
+    out = out.filter((r) => (f.academyId === 'none' ? !r.academyId : r.academyId === f.academyId));
+  }
+  if (f.from) out = out.filter((r) => r.registeredOn && r.registeredOn >= f.from);
+  if (f.to) out = out.filter((r) => r.registeredOn && r.registeredOn <= f.to);
+  return out;
+}
+
+/** The rollup shared by the overall block and every tournament block. */
+function rollup(rows, scoreRows) {
+  const completed = rows.filter((r) => r.completed);
+  const ids = new Set(rows.map((r) => r.participantId));
+  const sheets = scoreRows.filter((s) => ids.has(s.participantId));
+  const boutIds = new Set(rows.flatMap((r) => r.boutIds));
+  const academyIds = new Set(rows.map((r) => r.academyId).filter(Boolean));
+
+  return {
+    participants: rows.length,
+    academies: academyIds.size,
+    individuals: rows.filter((r) => !r.academyId).length,
+    bouts: boutIds.size,
+    assigned: rows.filter((r) => r.boutIds.length > 0).length,
+    unassigned: rows.filter((r) => r.boutIds.length === 0).length,
+    entries: rows.reduce((n, r) => n + r.events.length, 0),
+    sheets: sheets.length,
+    completed: completed.length,
+    waiting: rows.length - completed.length,
+    completedPct: pct(completed.length, rows.length),
+    averageScore: mean(sheets.map((s) => s.total)),
+    topScore: sheets.length > 0 ? Math.max(...sheets.map((s) => s.total ?? 0)) : null,
+    medals: rows.filter((r) => ['1', '2', '3'].includes(r.positionName)).length,
+  };
+}
+
+/** Rows grouped by a key, as completed/waiting pairs for the breakdown bars. */
+function group(rows, keyOf, labelOf) {
+  const buckets = new Map();
+  for (const r of rows) {
+    const key = keyOf(r) ?? 'none';
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(r);
+  }
+
+  return [...buckets.entries()]
+    .map(([key, list]) => {
+      const done = list.filter((r) => r.completed).length;
+      return {
+        id: key,
+        label: labelOf(key, list),
+        participants: list.length,
+        completed: done,
+        waiting: list.length - done,
+        completedPct: pct(done, list.length),
+      };
+    })
+    .sort((a, b) => b.participants - a.participants || a.label.localeCompare(b.label));
+}
+
+/** Events need their own grouping: a competitor can be in several at once. */
+function byEvent(rows, snap) {
+  return snap.events
+    .map((e) => {
+      const entrants = rows.filter((r) => r.events.includes(e.eventId));
+      const done = entrants.filter((r) => r.completed).length;
+      return {
+        id: e.eventId,
+        label: e.name,
+        participants: entrants.length,
+        completed: done,
+        waiting: entrants.length - done,
+        completedPct: pct(done, entrants.length),
+      };
+    })
+    .filter((r) => r.participants > 0)
+    .sort((a, b) => b.participants - a.participants);
+}
+
+/**
+ * Registrations and filed sheets per day, cumulative - which is what makes
+ * "are we on track" readable without a target line to compare against.
+ */
+function timeline(rows, scoreRows) {
+  const ids = new Set(rows.map((r) => r.participantId));
+  const days = new Map();
+  const bump = (day, key) => {
+    if (!day) return;
+    if (!days.has(day)) days.set(day, { day, registered: 0, scored: 0 });
+    days.get(day)[key] += 1;
+  };
+
+  for (const r of rows) bump(r.registeredOn, 'registered');
+  for (const s of scoreRows) {
+    if (ids.has(s.participantId)) bump(String(s.createdAt ?? '').slice(0, 10), 'scored');
+  }
+
+  let registered = 0;
+  let scored = 0;
+  return [...days.values()]
+    .sort((a, b) => a.day.localeCompare(b.day))
+    .map((d) => {
+      registered += d.registered;
+      scored += d.scored;
+      return { ...d, cumulativeRegistered: registered, cumulativeScored: scored };
+    });
+}
+
+router.get('/overview', (req, res) => {
+  const snap = snapshot(req);
+  const filters = overviewFilters(req.query);
+  const tournaments = db.all('Tournaments');
+  const academies = db.all('Academy');
+  const academyName = (id) =>
+    academies.find((a) => a.academyId === id)?.academyName ?? id;
+
+  const all = snap.participants.map((p) => ({
+    ...decorate(p, snap),
+    tournamentId: p.tournamentId ?? null,
+    registeredOn: String(p.createdAt ?? '').slice(0, 10),
+  }));
+
+  const rows = applyFilters(all, filters);
+
+  // A tournament block applies every filter except the tournament itself, so
+  // picking one narrows the page to that block instead of emptying the others.
+  const perTournament = tournaments
+    .filter((t) => !filters.tournamentId || t.tournamentId === filters.tournamentId)
+    .map((t) => {
+      const own = applyFilters(all, { ...filters, tournamentId: t.tournamentId });
+      return {
+        tournamentId: t.tournamentId,
+        name: t.name ?? t.tournamentName ?? t.tournamentId,
+        startDate: t.startDate ?? null,
+        endDate: t.endDate ?? null,
+        active: t.active !== false,
+        totals: rollup(own, snap.scores),
+        events: byEvent(own, snap),
+        ageCategories: group(
+          own,
+          (r) => r.ageCategoryId,
+          (key, list) => list[0].ageCategoryName ?? (key === 'none' ? 'No age band' : key)
+        ),
+      };
+    });
+
+  res.json({
+    filters,
+    options: {
+      tournaments: tournaments.map((t) => ({
+        tournamentId: t.tournamentId,
+        name: t.name ?? t.tournamentName ?? t.tournamentId,
+        active: t.active !== false,
+      })),
+      events: snap.events.map((e) => ({ eventId: e.eventId, name: e.name, active: e.active })),
+      ageCategories: snap.ages.map((a) => ({ ageCategoryId: a.ageCategoryId, name: a.name })),
+      academies: academies.map((a) => ({ academyId: a.academyId, academyName: a.academyName })),
+    },
+    overall: rollup(rows, snap.scores),
+    breakdown: {
+      events: byEvent(rows, snap),
+      ageCategories: group(
+        rows,
+        (r) => r.ageCategoryId,
+        (key, list) => list[0].ageCategoryName ?? (key === 'none' ? 'No age band' : key)
+      ),
+      academies: group(rows, (r) => r.academyId, (key) =>
+        key === 'none' ? 'Individual entrants' : academyName(key)
+      ),
+    },
+    tournaments: perTournament,
+    timeline: timeline(rows, snap.scores),
+    matched: rows.length,
+    ofTotal: all.length,
+  });
+});
+
 /* -------------------------------------------------------------- summary -- */
 
 router.get('/summary', (req, res) => {

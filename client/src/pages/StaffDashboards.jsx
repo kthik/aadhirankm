@@ -11,6 +11,8 @@ import BackupRestore from '../components/BackupRestore.jsx';
 import TournamentAdmin from '../components/TournamentAdmin.jsx';
 import AdminManagement from '../components/AdminManagement.jsx';
 import SystemLogs from '../components/SystemLogs.jsx';
+import SuperAdminOverview from '../components/SuperAdminOverview.jsx';
+import StorageSettings from '../components/StorageSettings.jsx';
 import { Field } from '../components/ui.jsx';
 import { Banner, Stat } from '../components/ui.jsx';
 
@@ -500,6 +502,16 @@ export function SuperAdminDashboard() {
       <div style={{ marginTop: 16 }}>
         <Tabs
           tabs={[
+            ...(modules.analytics
+              ? [
+                  {
+                    id: 'overview',
+                    label: 'Overview',
+                    icon: '📊',
+                    render: () => <SuperAdminOverview />,
+                  },
+                ]
+              : []),
             ...(modules.adminManagement
               ? [{ id: 'admins', label: 'Admins', icon: '⚙', render: () => <AdminManagement /> }]
               : []),
@@ -512,6 +524,7 @@ export function SuperAdminDashboard() {
             ...(modules.systemLogs
               ? [{ id: 'logs', label: 'System logs', icon: '📜', render: () => <SystemLogs /> }]
               : []),
+            { id: 'database', label: 'Database', icon: '🗄', render: () => <StorageSettings /> },
             {
               id: 'events',
               label: t('tab.events', 'Events'),

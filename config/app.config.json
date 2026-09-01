@@ -9,6 +9,18 @@
       "ta"
     ]
   },
+  "storage": {
+    "driver": "local",
+    "local": {
+      "dataDir": "server/data"
+    },
+    "gdrive": {
+      "dataDir": "Veeran/data",
+      "driveRoot": "",
+      "account": "",
+      "cache": true
+    }
+  },
   "modules": {
     "academyRegistration": true,
     "individualRegistration": true,

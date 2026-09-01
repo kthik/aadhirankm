@@ -649,3 +649,68 @@ tbody tr[data-group-start='true'] td { border-top: 1px solid var(--line-strong);
 tbody tr[data-group-start='true']:first-child td { border-top: none; }
 tbody tr[data-selected='true'] { background: var(--accent-soft); }
 tbody tr[data-selected='true']:hover { background: var(--accent-soft); }
+
+/* ------------------------------------------------- super admin overview -- */
+
+.trend { position: relative; }
+.trend-plot {
+  display: flex; align-items: flex-end; gap: 6px;
+  height: 168px; padding-top: 6px; overflow-x: auto;
+}
+.trend-col {
+  flex: 1 0 26px; display: grid; gap: 6px; align-content: end;
+  height: 100%; border-radius: 8px; outline: none;
+}
+.trend-col:hover, .trend-col:focus-visible { background: var(--surface-2); }
+.trend-bars { display: flex; align-items: flex-end; gap: 2px; height: 140px; }
+.trend-bar { flex: 1; border-radius: 4px 4px 0 0; transition: height 0.35s ease; min-height: 2px; }
+.trend-bar.reg { background: var(--series-2); }
+.trend-bar.done { background: var(--series-1); }
+.trend-day {
+  font-size: 10.5px; color: var(--muted); text-align: center;
+  white-space: nowrap; height: 14px;
+}
+
+.split-row { grid-template-columns: minmax(96px, 168px) 1fr 46px; }
+
+.progress-head {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  justify-content: space-between; gap: 16px; margin-bottom: 6px;
+}
+.progress-head .big { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.progress-figures { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12.5px; color: var(--muted); }
+.progress-figures b { display: block; font-size: 17px; color: var(--text); }
+
+.tcard { display: grid; gap: 12px; align-content: start; }
+.tcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tcard-head h3 { font-size: 16px; }
+.tcard-head .meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); }
+.tcard-figures {
+  display: grid; gap: 10px 16px; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  font-size: 12.5px; color: var(--muted);
+}
+.tcard-figures b { display: block; font-size: 18px; font-weight: 700; color: var(--text); }
+.tcard-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
+.tcard-progress .pct { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.tcard h4 {
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); margin-top: 2px;
+}
+
+/* -------------------------------------------------------- database panel -- */
+
+.dbnow {
+  display: grid; gap: 10px; margin: 14px 0 4px; padding: 14px;
+  border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2);
+}
+.dbnow > div { display: grid; gap: 2px; }
+.dbnow .k { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.dbnow .v { font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+
+.dbcheck {
+  margin-top: 16px; padding: 14px; border-radius: 12px;
+  border: 1px solid var(--line-strong); background: var(--surface-2);
+}
+.dbcheck h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.dbcheck .v { font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; margin: 4px 0 8px; }
+.dbcheck .banner { margin-top: 12px; }
