@@ -68,7 +68,27 @@ setInterval(() => {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.WEB_ORIGIN || 'http://localhost:5173', credentials: true }));
+/*
+ * Browser origins send cookies, so they are allow-listed explicitly. The Android
+ * build's web view has its own origin (https://localhost under Capacitor) and
+ * authenticates with a bearer token instead, but the origin still has to pass
+ * CORS - hence the two localhost schemes below. WEB_ORIGIN adds one more, which
+ * is how a phone on the venue LAN reaches a laptop by IP.
+ */
+const NATIVE_ORIGINS = ['https://localhost', 'capacitor://localhost', 'http://localhost'];
+const allowedOrigins = [
+  process.env.WEB_ORIGIN || 'http://localhost:5173',
+  ...NATIVE_ORIGINS,
+];
+
+app.use(
+  cors({
+    origin: (origin, cb) =>
+      // A request with no Origin header is a same-origin or native fetch.
+      cb(null, !origin || allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(origin)),
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '25mb' }));
 app.use(cookieParser());
 app.use(attachUser);

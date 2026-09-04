@@ -57,8 +57,15 @@ router.post('/login', (req, res) => {
 
   const user = sessionBody(login);
   db.update('LoginMaster', (l) => l.uid === login.uid, { lastLoginAt: new Date().toISOString() });
-  res.cookie('veeran_session', signSession({ uid: user.uid, role: user.role, refId: user.refId, name: user.name }), COOKIE);
-  res.json({ user, home: config().roles[user.role]?.home ?? '/' });
+
+  const token = signSession({ uid: user.uid, role: user.role, refId: user.refId, name: user.name });
+  res.cookie('veeran_session', token, COOKIE);
+
+  // The Android build identifies itself and gets the token to send back as a
+  // bearer header; a browser never receives one, so the web app's exposure is
+  // unchanged - its session stays in an HTTP-only cookie it cannot read.
+  const native = req.get('x-veeran-client') === 'native';
+  res.json({ user, home: config().roles[user.role]?.home ?? '/', token: native ? token : undefined });
 });
 
 router.post('/logout', (req, res) => {

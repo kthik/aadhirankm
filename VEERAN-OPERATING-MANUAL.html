@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Step-by-step instructions for running a Silambam competition on Veeran.">
+<title>Veeran Operating Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+Veeran Operating Manual</title>
+
+<style>
+  /* Tokens adopted from the app's own system, so the manual reads as part of
+     the product. Light on bare :root; night redefined for the OS preference and
+     for an explicit stamp, so a choice wins in either direction. */
+  :root {
+    color-scheme: light;
+    --bg: #eef1f7;
+    --card: #ffffff;
+    --card-2: rgba(15, 23, 42, 0.045);
+    --line: rgba(15, 23, 42, 0.12);
+    --line-strong: rgba(15, 23, 42, 0.22);
+    --text: #10192b;
+    --muted: #5b6880;
+    --accent: #b04f19;
+    --accent-soft: rgba(176, 79, 25, 0.12);
+    --accent-2: #0f6c8c;
+    --accent-2-soft: rgba(15, 108, 140, 0.11);
+    --ok: #12794f;
+    --ok-soft: rgba(18, 121, 79, 0.12);
+    --warn: #9a5a06;
+    --warn-soft: rgba(154, 90, 6, 0.12);
+    --danger: #c02434;
+    --danger-soft: rgba(192, 36, 52, 0.1);
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      color-scheme: dark;
+      --bg: #070a12;
+      --card: #121722;
+      --card-2: rgba(255, 255, 255, 0.06);
+      --line: rgba(255, 255, 255, 0.11);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --text: #eef2fb;
+      --muted: #98a4be;
+      --accent: #ff8a3d;
+      --accent-soft: rgba(255, 138, 61, 0.15);
+      --accent-2: #38e8ff;
+      --accent-2-soft: rgba(56, 232, 255, 0.12);
+      --ok: #3ddc97;
+      --ok-soft: rgba(61, 220, 151, 0.14);
+      --warn: #ffb066;
+      --warn-soft: rgba(255, 176, 102, 0.14);
+      --danger: #ff5f6d;
+      --danger-soft: rgba(255, 95, 109, 0.13);
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #070a12;
+    --card: #121722;
+    --card-2: rgba(255, 255, 255, 0.06);
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.22);
+    --text: #eef2fb;
+    --muted: #98a4be;
+    --accent: #ff8a3d;
+    --accent-soft: rgba(255, 138, 61, 0.15);
+    --accent-2: #38e8ff;
+    --accent-2-soft: rgba(56, 232, 255, 0.12);
+    --ok: #3ddc97;
+    --ok-soft: rgba(61, 220, 151, 0.14);
+    --warn: #ffb066;
+    --warn-soft: rgba(255, 176, 102, 0.14);
+    --danger: #ff5f6d;
+    --danger-soft: rgba(255, 95, 109, 0.13);
+    --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px 96px; display: grid; gap: 0; }
+  @media (min-width: 1040px) {
+    .wrap { grid-template-columns: 236px minmax(0, 1fr); column-gap: 56px; padding: 0 32px 120px; }
+  }
+
+  header.masthead {
+    grid-column: 1 / -1;
+    padding: 60px 0 34px;
+    border-bottom: 2px solid var(--text);
+    margin-bottom: 44px;
+  }
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(34px, 6vw, 58px); line-height: 1.02;
+    letter-spacing: -0.028em; margin: 0 0 18px; text-wrap: balance;
+  }
+  .standfirst { font-size: 19.5px; color: var(--muted); max-width: 60ch; margin: 0 0 26px; }
+  .facts {
+    display: flex; flex-wrap: wrap; gap: 10px 30px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+  }
+  .facts b { color: var(--text); font-weight: 500; }
+
+  nav.toc { display: none; }
+  @media (min-width: 1040px) {
+    nav.toc {
+      display: block; align-self: start; position: sticky; top: 28px;
+      max-height: calc(100vh - 56px); overflow-y: auto; padding-bottom: 20px;
+    }
+    nav.toc h2 {
+      font-family: var(--display); font-size: 11px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 600;
+    }
+    nav.toc ul { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 1px; }
+    nav.toc a {
+      display: block; padding: 5px 8px 5px 0;
+      font-family: var(--display); font-size: 13.5px; line-height: 1.35;
+      color: var(--muted); text-decoration: none; border-radius: 5px;
+    }
+    nav.toc a:hover { color: var(--accent); background: var(--accent-soft); }
+    nav.toc .grouplabel {
+      font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent); margin: 14px 0 6px;
+    }
+  }
+
+  main { min-width: 0; }
+
+  section.part { margin: 0 0 66px; scroll-margin-top: 22px; }
+
+  .part-head { border-top: 1px solid var(--line-strong); padding-top: 18px; margin-bottom: 22px; }
+  .part-head .who {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    letter-spacing: 0.04em; margin: 0 0 8px;
+  }
+  h2.part-title {
+    font-family: var(--display); font-weight: 700; font-size: 28px;
+    letter-spacing: -0.022em; line-height: 1.14; margin: 0 0 8px; text-wrap: balance;
+  }
+  .part-head p { color: var(--muted); font-size: 16.5px; margin: 0; max-width: 66ch; }
+
+  h3 {
+    font-family: var(--display); font-size: 17px; font-weight: 600;
+    letter-spacing: -0.008em; margin: 34px 0 12px;
+  }
+  h3 .step-of {
+    font-family: var(--mono); font-size: 12px; font-weight: 400;
+    color: var(--muted); margin-left: 8px; letter-spacing: 0;
+  }
+
+  p, ul { max-width: 68ch; }
+  p { margin: 0 0 15px; }
+  ul { margin: 0 0 16px; padding-left: 22px; }
+  li { margin: 0 0 7px; }
+  li::marker { color: var(--accent); }
+
+  code, kbd {
+    font-family: var(--mono); font-size: 0.855em;
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 5px; white-space: nowrap;
+  }
+  /* A control the reader clicks, as opposed to a value they type. */
+  .ui {
+    font-family: var(--display); font-size: 0.88em; font-weight: 600;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 5px; padding: 1px 7px; white-space: nowrap;
+  }
+  strong { font-weight: 600; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+
+  /* Numbered procedure — the hairline is the through-line of the task. */
+  .steps { margin: 0 0 24px; padding-left: 30px; border-left: 2px solid var(--line-strong); max-width: 70ch; }
+  .steps ol { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  .steps > ol > li {
+    position: relative; counter-increment: s; margin: 0 0 17px; font-size: 16px;
+  }
+  .steps > ol > li::before {
+    content: counter(s);
+    position: absolute; left: -42px; top: 2px;
+    width: 24px; height: 24px; display: grid; place-items: center;
+    border-radius: 50%; background: var(--accent); color: var(--bg);
+    font-family: var(--mono); font-size: 12px;
+  }
+  .steps ul { margin: 8px 0 0; padding-left: 20px; font-size: 15px; color: var(--muted); }
+  .steps ul strong { color: var(--text); }
+
+  .t-wrap {
+    overflow-x: auto; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--card); box-shadow: var(--shadow); margin: 0 0 22px; max-width: 100%;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 15px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: var(--display); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted);
+    background: var(--card-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .note {
+    display: grid; grid-template-columns: auto 1fr; gap: 14px;
+    margin: 0 0 22px; padding: 15px 18px;
+    border: 1px solid var(--line); border-left: 3px solid var(--accent-2);
+    border-radius: 0 11px 11px 0; background: var(--card); max-width: 72ch;
+  }
+  .note .tag {
+    font-family: var(--display); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-2);
+    padding-top: 4px; white-space: nowrap;
+  }
+  .note p:last-child { margin: 0; }
+  .note.stop { border-left-color: var(--danger); }
+  .note.stop .tag { color: var(--danger); }
+  .note.care { border-left-color: var(--warn); }
+  .note.care .tag { color: var(--warn); }
+
+  .cards { display: grid; gap: 16px; margin: 0 0 24px; }
+  @media (min-width: 720px) { .cards.two { grid-template-columns: 1fr 1fr; } }
+  .card {
+    border: 1px solid var(--line); border-radius: 12px; background: var(--card);
+    padding: 18px 20px; box-shadow: var(--shadow);
+  }
+  .card h4 { font-family: var(--display); font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .card .sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .card ul { margin: 0; padding-left: 19px; font-size: 15px; }
+  .card p { font-size: 15px; margin: 0; }
+
+  .pill {
+    display: inline-block; font-family: var(--display); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px;
+    border-radius: 999px; white-space: nowrap;
+  }
+  .pill.sa { color: var(--accent); background: var(--accent-soft); }
+  .pill.adm { color: var(--accent-2); background: var(--accent-2-soft); }
+  .pill.any { color: var(--ok); background: var(--ok-soft); }
+
+  footer {
+    grid-column: 1 / -1; border-top: 1px solid var(--line); margin-top: 20px;
+    padding-top: 22px; font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+  }
+
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Operating manual · v1.0</p>
+    <h1>Veeran Operating Manual</h1>
+    <p class="standfirst">
+      Step-by-step instructions for running a Silambam competition on Veeran — from an empty
+      system on the morning of setup, through registration and judging, to medals and the backup
+      you take home.
+    </p>
+    <div class="facts">
+      <span>Web <b>http://localhost:5173</b></span>
+      <span>API <b>http://localhost:4000</b></span>
+      <span>First password <b>pass@123</b></span>
+      <span>Companion doc <b>Veeran Functional Specification</b></span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <h2>Contents</h2>
+    <p class="grouplabel">Everyone</p>
+    <ul>
+      <li><a href="#start">Start the system</a></li>
+      <li><a href="#signin">Sign in and settings</a></li>
+    </ul>
+    <p class="grouplabel">Before the competition</p>
+    <ul>
+      <li><a href="#setup">Super Admin: first-time setup</a></li>
+      <li><a href="#prep">Admin: prepare the competition</a></li>
+    </ul>
+    <p class="grouplabel">Registration</p>
+    <ul>
+      <li><a href="#academy">Academy coach</a></li>
+      <li><a href="#individual">Individual competitor</a></li>
+      <li><a href="#bulk">Bulk upload</a></li>
+    </ul>
+    <p class="grouplabel">Competition day</p>
+    <ul>
+      <li><a href="#bouts">Build and assign bouts</a></li>
+      <li><a href="#judge">Judge: scoring</a></li>
+      <li><a href="#monitor">Monitor progress</a></li>
+      <li><a href="#medals">Champions and medals</a></li>
+    </ul>
+    <p class="grouplabel">Afterwards</p>
+    <ul>
+      <li><a href="#backup">Backup and restore</a></li>
+      <li><a href="#database">Move the database</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- ===================================================== start -->
+    <section class="part" id="start">
+      <div class="part-head">
+        <p class="who"><span class="pill any">Everyone</span></p>
+        <h2 class="part-title">Start the system</h2>
+        <p>Two processes run together: the API and the web app. Both start from one command.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Open a terminal in the project folder.</li>
+          <li>The first time only, install dependencies: <code>npm run install:all</code></li>
+          <li>Start everything: <code>npm run dev</code>
+            <ul>
+              <li>The API prints <code>Veeran API listening on http://localhost:4000</code> and,
+                  above it, the database folder it is using.</li>
+              <li>The web app prints <code>http://localhost:5173</code>.</li>
+            </ul>
+          </li>
+          <li>Open <strong>http://localhost:5173</strong> in a browser.</li>
+        </ol>
+      </div>
+
+      <div class="note stop">
+        <span class="tag">If the page says</span>
+        <p>
+          <em>"Cannot reach the server, so registration is unavailable and sign-in will fail"</em> —
+          the API is not running. Both halves must be up; start them with
+          <code>npm run dev</code> from the project root, not the client folder alone, then reload.
+        </p>
+      </div>
+
+      <p>
+        For a single-process production run, build the web app and let the API serve it:
+        <code>npm run build &amp;&amp; npm start</code>, then open
+        <strong>http://localhost:4000</strong>.
+      </p>
+    </section>
+
+    <!-- ==================================================== signin -->
+    <section class="part" id="signin">
+      <div class="part-head">
+        <p class="who"><span class="pill any">Everyone</span></p>
+        <h2 class="part-title">Sign in and settings</h2>
+        <p>Every role signs in the same way, with the UID issued at registration.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>On the sign-in screen, type your <strong>UID</strong> — for example
+              <code>SA001</code>, <code>AD001</code>, <code>A001</code>, <code>P001</code>,
+              <code>J001</code>.</li>
+          <li>Type your password. A brand-new account's password is
+              <code>pass@123</code>.</li>
+          <li>Press <span class="ui">Sign in</span>. You land on your own dashboard.</li>
+          <li>If a banner says you are still on the default password, change it: open the
+              <strong>settings gear</strong> in the top bar and use the password section.</li>
+        </ol>
+      </div>
+
+      <h3>The settings gear</h3>
+      <ul>
+        <li><strong>Day / night / auto</strong> — auto follows the computer's setting.</li>
+        <li><strong>English / தமிழ்</strong> — switches the interface. Names of people, academies
+            and events are never translated.</li>
+        <li><strong>Change password</strong> and <strong>Sign out</strong>.</li>
+      </ul>
+
+      <h3>Forgotten your UID?</h3>
+      <p>
+        An academy can recover its UID from <span class="ui">Forgot your UID?</span> on the sign-in
+        screen by entering the academy name, coach name and phone number — all three must match the
+        registration exactly. Anything else returns "contact an Admin", which is deliberate: it
+        stops the page being used to fish for academy names.
+      </p>
+      <p>
+        A competitor or judge who has lost their UID should ask an Admin, who can find them by name
+        and reset the password from the drawer that opens when their name is clicked.
+      </p>
+    </section>
+
+    <!-- ===================================================== setup -->
+    <section class="part" id="setup">
+      <div class="part-head">
+        <p class="who"><span class="pill sa">Super Admin</span> · <code>SA001</code></p>
+        <h2 class="part-title">First-time setup</h2>
+        <p>
+          Do this once, in order, before anyone registers. It takes about twenty minutes on a fresh
+          system.
+        </p>
+      </div>
+
+      <h3>Create the tournament <span class="step-of">Tournaments tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Sign in as <code>SA001</code> and open the <span class="ui">Tournaments</span> tab.</li>
+          <li>Fill in <strong>Name</strong> and <strong>Location</strong> — for example
+              "National Silambam Tournament", "Coimbatore".</li>
+          <li>Fill in <strong>Venue address</strong>. Competitors see this on the registration form
+              when they pick the tournament, so write the full address.</li>
+          <li>Set <strong>Start date</strong> and <strong>End date</strong>. The end date is
+              inclusive, and the tournament closes itself the day after it.
+            <ul>
+              <li>Leaving the end date blank means open-ended — it keeps taking entries until you
+                  switch it off.</li>
+            </ul>
+          </li>
+          <li>Press <span class="ui">Create tournament</span>. It appears under
+              <span class="ui">All tournaments</span> with a record count.</li>
+          <li>Deactivate the auto-created "Silambam Open" placeholder if you are not using it, so
+              competitors are not offered a choice that does not exist.</li>
+        </ol>
+      </div>
+
+      <h3>Check the events <span class="step-of">Events tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Events</span>. Six Silambam events are seeded
+              (<code>E001</code>–<code>E006</code>).</li>
+          <li>To add one, fill <strong>Event name</strong>, <strong>Category</strong>
+              (Solo, Pair, Weapon…) and a description, then
+              <span class="ui">Create event</span>. It becomes selectable on every registration
+              form immediately.</li>
+          <li>Use <span class="ui">Deactivate</span> on anything you are not running. A deactivated
+              event disappears from registration forms and is rejected if someone submits it
+              anyway.</li>
+        </ol>
+      </div>
+
+      <h3>Create the admins <span class="step-of">Admins tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Admins</span>. <code>AD001</code> exists already.</li>
+          <li>Enter the admin's name. Leave the password blank to issue
+              <code>pass@123</code>, or set one.</li>
+          <li>Optionally tick the <strong>tournaments</strong> this admin may see. Leave all
+              unticked to give them everything.</li>
+          <li>Press create. The UID and password are shown <strong>once</strong> — copy them and
+              hand them over. They cannot be read back later.</li>
+        </ol>
+      </div>
+
+      <div class="note care">
+        <span class="tag">Passwords</span>
+        <p>
+          Passwords are stored hashed, so nobody — including you — can read an existing one. If
+          somebody loses theirs, reset it: the new value is displayed once, for you to pass on.
+        </p>
+      </div>
+
+      <h3>Confirm the database location <span class="step-of">Database tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Database</span> and read the top panel: the folder in use, the
+              driver, and how many rows and Super Admin logins it holds.</li>
+          <li>For a single laptop, leave the driver on <strong>Local JSON</strong>.</li>
+          <li>To share one database across machines, see
+              <a href="#database">Move the database</a> — do it now, before any registration, when
+              there is nothing to lose.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ====================================================== prep -->
+    <section class="part" id="prep">
+      <div class="part-head">
+        <p class="who"><span class="pill adm">Admin</span> · <span class="pill sa">Super Admin</span></p>
+        <h2 class="part-title">Prepare the competition</h2>
+        <p>Age bands, score criteria and judges — set before the first performance.</p>
+      </div>
+
+      <h3>Age and score categories <span class="step-of">Categories tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Sign in as <code>AD001</code> and open <span class="ui">Categories</span>.</li>
+          <li>Check the <strong>age categories</strong>. Five are seeded: Sub-Junior 4–10,
+              Junior 11–15, Cadet 16–18, Senior 19–35, Veteran 36–80.
+            <ul>
+              <li>Ranges must not overlap. A competitor's band is worked out from their age, so
+                  editing a range immediately re-categorises everyone in it — no re-entry needed.</li>
+            </ul>
+          </li>
+          <li>Check the <strong>score categories</strong>. Five are seeded: Position, Power, Speed,
+              Stability, Style. Each is marked out of 10, so a sheet totals 50.
+            <ul>
+              <li>Five active is the maximum. Deactivate one before adding another.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <h3>Register the judges <span class="step-of">Judges tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Judges</span> → <span class="ui">Register a judge</span>.</li>
+          <li>Enter judge name, academy, location, address and mobile.</li>
+          <li>Leave the bouts empty for now if the bouts do not exist yet — you can assign them
+              later from the same tab.</li>
+          <li>Press create and note the UID (<code>J001</code>…) and password shown once.</li>
+        </ol>
+      </div>
+
+      <p>
+        Clicking a judge's name anywhere opens their drawer: the bouts they hold, the sheets they
+        have filed, and an edit form.
+      </p>
+
+      <div class="note care">
+        <span class="tag">Deactivating a judge</span>
+        <p>
+          Deactivating or deleting a judge hands back every bout they have <strong>not
+          finished</strong>, so it shows as unassigned and you can reassign it. A bout they did
+          finish keeps their id, because that is the record of who scored those results — the
+          sheets themselves are never deleted. Reactivating restores their sign-in but not their
+          bouts, which may already belong to someone else.
+        </p>
+      </div>
+    </section>
+
+    <!-- =================================================== academy -->
+    <section class="part" id="academy">
+      <div class="part-head">
+        <p class="who">Academy coach · no account needed to start</p>
+        <h2 class="part-title">Register an academy</h2>
+        <p>A coach registers the academy once, then enrols competitors under it.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Open the app and press <span class="ui">Register an academy</span> under
+              "New here?".</li>
+          <li>Choose the competition in <strong>Registering for</strong>. The list holds only
+              tournaments that are on now or still to come.
+            <ul>
+              <li>Selecting one shows its <strong>dates</strong>, <strong>location</strong> and
+                  <strong>venue address</strong>. Check them before continuing — everything you
+                  register afterwards is filed under this tournament.</li>
+            </ul>
+          </li>
+          <li>Fill in academy name, coach name, phone (10 digits starting 6–9), location and
+              address.</li>
+          <li>Press <span class="ui">Create academy</span>.</li>
+          <li>A card shows your <strong>UID</strong> (<code>A00n</code>) and temporary password.
+              Copy both — the UID is how you sign in from now on.</li>
+          <li>Press <span class="ui">Go to sign in</span>, sign in, and change the password under
+              the settings gear.</li>
+        </ol>
+      </div>
+
+      <h3>Enrol competitors one at a time</h3>
+      <div class="steps">
+        <ol>
+          <li>On the academy dashboard open <span class="ui">Register participant</span>.</li>
+          <li>Enter participant name, father's name, age (4–80) and mobile.
+            <ul>
+              <li>Mobile, address and location are pre-filled from the academy. Overwrite them for
+                  a competitor whose details differ.</li>
+            </ul>
+          </li>
+          <li>Tap the <strong>events</strong> the competitor is entering. A competitor may enter
+              several.</li>
+          <li>Press register. Their UID and password appear once — pass them to the competitor so
+              they can watch their own results.</li>
+          <li>Repeat, or use <a href="#bulk">bulk upload</a> for a whole squad.</li>
+        </ol>
+      </div>
+
+      <p>
+        You do not choose a tournament again: competitors you add inherit the academy's. Track the
+        squad under <span class="ui">Participants</span>, and squad progress, entries per event and
+        your podium under <span class="ui">Overview</span>.
+      </p>
+    </section>
+
+    <!-- ================================================ individual -->
+    <section class="part" id="individual">
+      <div class="part-head">
+        <p class="who">Individual competitor · no account needed to start</p>
+        <h2 class="part-title">Register as an individual</h2>
+        <p>For a competitor entering without an academy.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Press <span class="ui">Register as an individual</span> under "New here?".</li>
+          <li>Choose the competition in <strong>Registering for</strong> and check the dates,
+              location and venue address shown underneath.</li>
+          <li>Enter participant name, father's name, age, mobile, location and address.</li>
+          <li>Tap every event you are entering.</li>
+          <li>Press <span class="ui">Register</span> and copy the UID (<code>P00n</code>) and
+              temporary password from the card.</li>
+          <li>Sign in and change the password under the settings gear.</li>
+        </ol>
+      </div>
+
+      <h3>What a competitor sees after signing in</h3>
+      <ul>
+        <li><span class="ui">My results</span> — events entered, judged, medals, best position,
+            average score and age group, with a per-category breakdown for each judged event.</li>
+        <li><span class="ui">Registered events</span> — the entries and the bout each one sits
+            in.</li>
+        <li><span class="ui">Update profile</span> — correct contact details.</li>
+      </ul>
+    </section>
+
+    <!-- ====================================================== bulk -->
+    <section class="part" id="bulk">
+      <div class="part-head">
+        <p class="who">Academy coach · signed in</p>
+        <h2 class="part-title">Bulk upload a squad</h2>
+        <p>One spreadsheet, up to 500 competitors, all or nothing.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Bulk upload</span> on the academy dashboard.</li>
+          <li>Download the <strong>template</strong>. It carries an <em>Event Codes</em> sheet
+              listing every active event and its code.</li>
+          <li>Fill one row per competitor: Participant name, Father's name, Age, Mobile, Address,
+              Location, Events participating.
+            <ul>
+              <li><strong>Events</strong> accepts codes (<code>E001</code>), full event names, or
+                  several of either separated by commas or semicolons.</li>
+              <li><strong>Blank</strong> Mobile, Address or Location inherit the academy's.</li>
+            </ul>
+          </li>
+          <li>Upload the file. It is read in your browser, so nothing is sent until it parses.</li>
+          <li>Read the result.
+            <ul>
+              <li><strong>All rows valid</strong> → everyone is created and the UIDs are listed.</li>
+              <li><strong>Any row invalid</strong> → <strong>nothing is saved</strong>. Each bad row
+                  comes back with its spreadsheet row number and the field at fault.</li>
+            </ul>
+          </li>
+          <li>Fix the flagged rows in the spreadsheet and upload the whole file again.</li>
+        </ol>
+      </div>
+
+      <div class="note">
+        <span class="tag">Why all-or-nothing</span>
+        <p>
+          A half-loaded roster is worse than none: you cannot tell which competitors made it
+          without checking every row by hand. Rejecting the batch keeps the spreadsheet as the
+          single source of truth until it is clean.
+        </p>
+      </div>
+
+      <p>
+        Duplicates are refused: the same name and mobile already in your academy is rejected rather
+        than entered twice.
+      </p>
+    </section>
+
+    <!-- ===================================================== bouts -->
+    <section class="part" id="bouts">
+      <div class="part-head">
+        <p class="who"><span class="pill adm">Admin</span></p>
+        <h2 class="part-title">Build and assign bouts</h2>
+        <p>
+          A bout is a judged group. Competitors are invisible to judges until they are placed in
+          one, so this is the step that makes the competition run.
+        </p>
+      </div>
+
+      <h3>Create a bout <span class="step-of">Bouts tab</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Bouts</span> → <span class="ui">Create a bout</span>.</li>
+          <li>Name it something a judge will recognise from the schedule — "Kambu Solo · Junior ·
+              Mat 1".</li>
+          <li>Optionally scope it to an <strong>event</strong> and an <strong>age
+              category</strong>. Scoping is worth doing: the eligible list then narrows to
+              competitors who match both, and the judge sees only that event.</li>
+          <li>Choose the judge, or leave it unassigned and assign from the
+              <span class="ui">Judges</span> tab later.</li>
+          <li>Create it.</li>
+        </ol>
+      </div>
+
+      <h3>Put competitors in it</h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Assign participants to a bout</span>, or use the
+              <span class="ui">Participants</span> tab for larger groups.</li>
+          <li>Filter the list — by search, event, academy, bout or assignment state. Filter to
+              <strong>Not assigned</strong> to see who is still waiting.</li>
+          <li>Tick the competitors, or use <span class="ui">Select all shown</span>.</li>
+          <li>Choose the bout and press <span class="ui">Add to bout</span>. Use
+              <span class="ui">Remove from bout</span> to take them out again.</li>
+        </ol>
+      </div>
+
+      <div class="note care">
+        <span class="tag">Two rules the system enforces</span>
+        <p>
+          A competitor may hold <strong>at most one bout per event</strong> — two would mean being
+          judged twice for the same event. And a bout belongs to <strong>exactly one
+          judge</strong>: assigning a bout that is already held raises a confirmation, and
+          confirming moves it, clearing the previous judge's claim so it is never held twice.
+        </p>
+      </div>
+
+      <p>
+        Running order needs no management. Within a bout, competitors entered in more events go
+        first so they have time to prepare for their next event, then queue number decides, and
+        scored competitors drop to the bottom of the judge's list.
+      </p>
+    </section>
+
+    <!-- ===================================================== judge -->
+    <section class="part" id="judge">
+      <div class="part-head">
+        <p class="who">Judge · <code>J00n</code></p>
+        <h2 class="part-title">Score a bout</h2>
+        <p>A judge sees only their own bouts, one tab each, and never the whole competition.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Sign in with your judge UID. Your dashboard opens on your first bout, showing
+              assigned, completed and blocked counts.</li>
+          <li>Pick the bout tab you are judging. Each tab is named for its event.</li>
+          <li>Read the running order. Call the competitor at the top who is
+              <strong>ready</strong>.
+            <ul>
+              <li><strong>In other performance</strong>, greyed out, means they are performing in
+                  another bout right now. They become clickable once that judge files their sheet —
+                  carry on down the list and come back.</li>
+              <li>Rows already scored sit at the bottom with their result.</li>
+            </ul>
+          </li>
+          <li>Click the competitor's row to open the score sheet.</li>
+          <li>Enter a score from <strong>0 to 10</strong> for each category — Position, Power,
+              Speed, Stability, Style. The total updates as you type.</li>
+          <li>Choose the <strong>position</strong>: 1, 2, 3 or 4, or Disqualified or Absent.</li>
+          <li>Submit. You return to the running order with progress updated and the row moved to
+              the bottom.</li>
+        </ol>
+      </div>
+
+      <h3>Correcting a sheet</h3>
+      <p>
+        Click the competitor again. The sheet re-opens pre-filled with what you entered, so
+        submitting a correction is the same action as the original entry. There is no separate
+        edit mode and nothing to unlock.
+      </p>
+
+      <div class="note">
+        <span class="tag">Progress</span>
+        <p>
+          Above the running order sits a scored-versus-waiting bar, and per bout: how many are
+          scored, how many pending, and how many podium places you have closed. An admin sees the
+          same figures for every bout at once.
+        </p>
+      </div>
+    </section>
+
+    <!-- =================================================== monitor -->
+    <section class="part" id="monitor">
+      <div class="part-head">
+        <p class="who"><span class="pill adm">Admin</span> · <span class="pill sa">Super Admin</span></p>
+        <h2 class="part-title">Monitor progress</h2>
+        <p>Where to look while the competition is running, depending on the question.</p>
+      </div>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Question</th><th>Where</th></tr></thead>
+          <tbody>
+            <tr><td>How far through are we overall?</td><td>Admin <span class="ui">Overview</span> — completion %, participants, bouts, judges active</td></tr>
+            <tr><td>Which bout is holding us up?</td><td>Admin <span class="ui">Overview</span> — the bout grid; each cell prints its percentage and state</td></tr>
+            <tr><td>Is a judge falling behind?</td><td>Admin <span class="ui">Overview</span> — per-judge assigned, judged, completion %, average score</td></tr>
+            <tr><td>Who has not been scored yet?</td><td>Admin <span class="ui">List view</span> — filter completion to <strong>Waiting</strong></td></tr>
+            <tr><td>Who is not in a bout yet?</td><td>Admin <span class="ui">Participants</span> — assignment filter <strong>Not assigned</strong></td></tr>
+            <tr><td>How is one academy doing?</td><td>Click the academy name anywhere → drawer with squad, progress and sign-in state</td></tr>
+            <tr><td>How is one competitor doing?</td><td>Click their name → every judge's sheet for them, event by event</td></tr>
+            <tr><td>How do two tournaments compare?</td><td>Super Admin <span class="ui">Overview</span> — a card per tournament under one filter bar</td></tr>
+            <tr><td>Are registrations keeping pace with scoring?</td><td>Super Admin <span class="ui">Overview</span> — the cumulative registered-versus-scored trend</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Export what is on screen <span class="step-of">List view</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">List view</span> and set the filters — event, age group, bout,
+              judge, completion, or free text.</li>
+          <li>Press the CSV export. The file contains exactly the rows on screen, in the same
+              order.</li>
+        </ol>
+      </div>
+
+      <p>
+        A competitor entered in several events appears as <strong>one row per event</strong>, all
+        sharing their registration ID, each showing that event's own bout and result. Filtering by
+        event narrows to that event's rows rather than listing every event of everyone who entered
+        it.
+      </p>
+
+      <h3>The Super Admin filter bar</h3>
+      <div class="steps">
+        <ol>
+          <li>Sign in as <code>SA001</code> and open <span class="ui">Overview</span>.</li>
+          <li>Set any combination of tournament, event, age category, academy and a
+              registered-between date range.</li>
+          <li>Every panel below re-reads from that selection: headline totals, the splits by event,
+              age band and academy, the trend, and each tournament card. The header states how many
+              competitors matched out of the total.</li>
+          <li>Press <span class="ui">Clear filters</span> to return to everything.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ==================================================== medals -->
+    <section class="part" id="medals">
+      <div class="part-head">
+        <p class="who"><span class="pill adm">Admin</span></p>
+        <h2 class="part-title">Champions and medal handover</h2>
+        <p>The podium, and a record of which medals have physically been given out.</p>
+      </div>
+
+      <div class="steps">
+        <ol>
+          <li>Open the <span class="ui">Champions</span> tab. Winners are grouped by bout, with
+              gold, silver and bronze totals and an issued percentage.</li>
+          <li>Call the winners and hand over the medal.</li>
+          <li>Tick <span class="ui">Mark issued</span> on that winner's row.</li>
+          <li>Confirm in the dialog. The row records who issued it and when, and the box
+              locks.</li>
+        </ol>
+      </div>
+
+      <div class="note care">
+        <span class="tag">One-way</span>
+        <p>
+          Issuing cannot be undone from the interface — handing over a medal is a physical act, not
+          a toggle. The handover is stored separately from the score sheet, so a judge revising a
+          score afterwards cannot erase the record that a medal was given out.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================================================== backup -->
+    <section class="part" id="backup">
+      <div class="part-head">
+        <p class="who"><span class="pill adm">Admin</span> full backup · <span class="pill sa">Super Admin</span> everything else</p>
+        <h2 class="part-title">Backup and restore</h2>
+        <p>One Excel workbook, a sheet per table. Take one at the end of every competition day.</p>
+      </div>
+
+      <h3>Take a backup</h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Backup &amp; restore</span> → <span class="ui">Backup</span>.</li>
+          <li>For everything, press the download straight away.</li>
+          <li>For part of the data (Super Admin), set a filter first — tournament, academy,
+              competitor, or a date range — then download.</li>
+          <li>Store the file somewhere off this machine. The backup history table records what was
+              taken, by whom, when, and its scope.</li>
+        </ol>
+      </div>
+
+      <div class="note">
+        <span class="tag">Backup never deletes</span>
+        <p>
+          Downloading changes nothing. Clearing records is a separate action, because a download
+          that also wipes data on the way out is far too easy to fire by accident.
+        </p>
+      </div>
+
+      <h3>Restore a backup <span class="step-of">Super Admin</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Restore</span> and choose the workbook.</li>
+          <li>Read the <strong>preview</strong>: per table, how many rows are incoming, how many
+              are duplicates, and how many will be added.</li>
+          <li>Press restore.
+            <ul>
+              <li>A row whose id already exists is <strong>skipped, never overwritten</strong>, so
+                  a restore cannot silently replace work done since the backup, and running it
+                  twice is safe.</li>
+              <li>If anything fails part-way, every table rolls back.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <h3>Clear records <span class="step-of">Super Admin</span></h3>
+      <div class="steps">
+        <ol>
+          <li>Take a backup of the records first.</li>
+          <li>Set the filter for what should go.</li>
+          <li>Press the delete action. It reports exactly what it would remove, per table.</li>
+          <li>Confirm. Without an explicit confirmation nothing is deleted.</li>
+        </ol>
+      </div>
+
+      <div class="note stop">
+        <span class="tag">Read this before deleting</span>
+        <p>
+          A backup filter and a delete filter mean different things on purpose. Backing up one
+          competitor <em>includes</em> their academy, bout and judge so the file makes sense on its
+          own; deleting that competitor does <em>not</em> take their academy and judge with them. An
+          academy is only removed by an academy or tournament filter, judges and bouts only by a
+          tournament filter.
+        </p>
+      </div>
+    </section>
+
+    <!-- ================================================== database -->
+    <section class="part" id="database">
+      <div class="part-head">
+        <p class="who"><span class="pill sa">Super Admin</span> · Database tab</p>
+        <h2 class="part-title">Move the database</h2>
+        <p>
+          Point the app at a different folder — typically a synced Google Drive folder so several
+          machines share one database. Do it when nothing is live, ideally before registration
+          opens.
+        </p>
+      </div>
+
+      <h3>Before you start</h3>
+      <ul>
+        <li>For Google Drive: <strong>Drive for desktop</strong> must be installed and signed in on
+            this machine. The app has no Google login of its own — it reads and writes the synced
+            folder like any other folder.</li>
+        <li>Run <strong>one</strong> server against a Drive folder at a time. Drive syncs whole
+            files rather than merging them, so two machines writing at once produces a conflict
+            copy, not a merge.</li>
+      </ul>
+
+      <h3>Change the location</h3>
+      <div class="steps">
+        <ol>
+          <li>Open <span class="ui">Database</span> and note what the top panel says now — folder,
+              driver, rows and Super Admin logins.</li>
+          <li>Choose the driver: <span class="ui">Local JSON</span> or
+              <span class="ui">Google Drive</span>.</li>
+          <li>Fill in the fields.
+            <ul>
+              <li><strong>Local</strong> — a folder path, absolute or relative to the project.</li>
+              <li><strong>Drive</strong> — the folder <em>inside</em> Drive (e.g.
+                  <code>Veeran/data</code>). Set the synced Drive folder only if it is mounted
+                  somewhere unusual. The account field is a label so it is clear whose Drive holds
+                  the data.</li>
+              <li>Leave <strong>Keep a local copy for reads</strong> ticked unless you have a
+                  reason not to: reads then come from local disk and refresh from Drive, and the app
+                  still answers reads if Drive goes offline.</li>
+            </ul>
+          </li>
+          <li>Press <span class="ui">Check location</span>. Nothing is written. The panel reports
+              the resolved folder and what is already in it, and warns you if it holds a database
+              or has no Super Admin login.</li>
+          <li>Press <span class="ui">Save location</span>. A dialog names the source, the
+              destination and its contents.</li>
+          <li>Answer the copy question.
+            <ul>
+              <li><strong>Yes, copy</strong> — every collection is written across, then the app
+                  switches. If the destination already holds data you must tick the box confirming
+                  it will be replaced.</li>
+              <li><strong>No, just switch</strong> — only allowed when the destination already has
+                  a Super Admin login. You get an alert that the old data stays on disk but is no
+                  longer read.</li>
+            </ul>
+          </li>
+          <li>Type <strong>your own Super Admin password</strong> and confirm.</li>
+          <li>Check the panel now reads the new folder, and that the row count looks right. Nothing
+              was deleted from the old folder.</li>
+        </ol>
+      </div>
+
+      <div class="note stop">
+        <span class="tag">Why a switch can be refused</span>
+        <p>
+          If you decline the copy and the destination has <strong>no Super Admin login</strong>, the
+          switch is refused. After it, nobody could sign in to administer the new location — and the
+          real database, with everything in it, would be left behind at the old path. Copy the data
+          across, or point at a folder that already has a Super Admin account.
+        </p>
+      </div>
+
+      <p>
+        The change takes effect immediately; no restart is needed. It is recorded in
+        <span class="ui">System logs</span>. If an environment variable is overriding the
+        configuration, the panel says so — the variable still wins until it is removed.
+      </p>
+    </section>
+
+    <!-- ================================================== trouble -->
+    <section class="part" id="trouble">
+      <div class="part-head">
+        <p class="who"><span class="pill any">Everyone</span></p>
+        <h2 class="part-title">Troubleshooting</h2>
+        <p>The symptoms most likely to come up on the day, and what each one actually means.</p>
+      </div>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sign-in fails with "Request failed (500)"</td>
+              <td>The API is not running, so the web server has nothing to talk to</td>
+              <td>Run <code>npm run dev</code> from the project root and reload</td>
+            </tr>
+            <tr>
+              <td>"New here?" shows no registration links</td>
+              <td>Same cause — configuration could not be loaded, so nothing module-gated renders</td>
+              <td>Start the API. The banner on the sign-in screen names this</td>
+            </tr>
+            <tr>
+              <td>The API exits at startup saying no Drive folder was found</td>
+              <td>Driver is Google Drive but Drive for desktop is not installed or signed in here</td>
+              <td>Install and sign in, or start once with <code>VEERAN_DB_DRIVER=local</code> and switch the driver from the Database tab</td>
+            </tr>
+            <tr>
+              <td>The tournament dropdown is empty or missing</td>
+              <td>No tournament is active with a start date and an unexpired end date</td>
+              <td>Create one, or extend the end date, in <span class="ui">Tournaments</span></td>
+            </tr>
+            <tr>
+              <td>"That tournament is not open for registration"</td>
+              <td>The chosen tournament has ended or been deactivated since the page loaded</td>
+              <td>Reload the form and pick from the refreshed list</td>
+            </tr>
+            <tr>
+              <td>A judge cannot click a competitor — "In other performance"</td>
+              <td>The competitor is due in another bout first; this is deliberate</td>
+              <td>Score the rest of the list; the row unlocks when the other judge files their sheet</td>
+            </tr>
+            <tr>
+              <td>Assigning a bout asks for confirmation</td>
+              <td>Another judge already holds it, and a bout may only have one judge</td>
+              <td>Confirm to move it, which clears the previous judge's claim</td>
+            </tr>
+            <tr>
+              <td>Bulk upload saved nothing</td>
+              <td>At least one row failed validation, and import is all-or-nothing</td>
+              <td>Fix the flagged rows — the row numbers match the spreadsheet — and re-upload the whole file</td>
+            </tr>
+            <tr>
+              <td>A restore added fewer rows than expected</td>
+              <td>Rows whose ids already exist are skipped, never overwritten</td>
+              <td>Expected. Use the delete-first option only for a deliberate full replace</td>
+            </tr>
+            <tr>
+              <td>An admin cannot see a tournament's data</td>
+              <td>That admin is scoped to named tournaments</td>
+              <td>Add the tournament to them in <span class="ui">Admins</span>, or clear their list to make them unrestricted</td>
+            </tr>
+            <tr>
+              <td>Reactivating a finished tournament is refused</td>
+              <td>Its end date has passed; the next sweep would switch it off again</td>
+              <td>Extend the end date first, then activate</td>
+            </tr>
+            <tr>
+              <td>A medal was issued by mistake</td>
+              <td>Issuing is one-way by design</td>
+              <td>Record the correction outside the system; the audit log shows who issued it and when</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Day-of checklist</h3>
+      <div class="cards two">
+        <div class="card">
+          <h4>Before the first performance</h4>
+          <p class="sub">Admin</p>
+          <ul>
+            <li>Tournament active, dates correct</li>
+            <li>Events for today active, others deactivated</li>
+            <li>Age and score categories checked</li>
+            <li>Every judge registered and able to sign in</li>
+            <li>Bouts created, scoped, and each with a judge</li>
+            <li>No competitor left under <strong>Not assigned</strong></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>At the end of the day</h4>
+          <p class="sub">Admin or Super Admin</p>
+          <ul>
+            <li>Completion % read off the Overview</li>
+            <li>Any bout still short of 100% chased</li>
+            <li>Champions reviewed, medals marked issued</li>
+            <li>Backup downloaded and stored off the machine</li>
+            <li>System logs skimmed for anything unexpected</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Veeran · Silambam Competition Management</span>
+      <span>Operating manual v1.0</span>
+      <span>Companion: Veeran Functional Specification</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

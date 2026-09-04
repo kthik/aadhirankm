@@ -9,6 +9,7 @@ import {
   autoDeactivateExpired,
   isRunning,
   openTournaments,
+  phaseOf,
   scopeFor,
 } from '../lib/tournament.js';
 
@@ -69,6 +70,7 @@ router.get('/open', (_req, res) => {
       address: t.address ?? '',
       startDate: t.startDate ?? '',
       endDate: t.endDate ?? '',
+      phase: phaseOf(t),
     })),
   });
 });

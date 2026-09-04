@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">veeran</string>
-    <string name="title_activity_main">veeran</string>
+    <string name="app_name">Veeran</string>
+    <string name="title_activity_main">Veeran</string>
     <string name="package_name">com.veeran.app</string>
     <string name="custom_url_scheme">com.veeran.app</string>
 </resources>

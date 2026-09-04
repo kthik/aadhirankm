@@ -6,6 +6,16 @@ React SPA + Express API.
 **Covered so far: foundation, registration/auth, bulk upload, judging, scoring and the
 analytics dashboard.** Live updates, i18n and backup/restore are switched off in config.
 
+## Documentation
+
+Two standalone HTML documents at the project root — open either in a browser, no server
+needed. Both follow the app's own day/night tokens.
+
+| File | What it is |
+| --- | --- |
+| `VEERAN-OPERATING-MANUAL.html` | Step-by-step instructions by role: start the system, first-time setup, registration, bout assignment, judging, medals, backups, moving the database, troubleshooting |
+| `VEERAN-FUNCTIONAL-SPEC.html` | What the system does and the rules it enforces: roles, modules, the 15 collections, tournaments, running-order derivation, scoring, storage, backup semantics, validation, API surface |
+
 ## Run it
 
 ```bash
@@ -50,6 +60,31 @@ client/src/
                          ScoreSheet, JudgeAdmin, AdminAnalytics, ParticipantDrawer
   pages/                 Login, ForgotUid, registration, dashboards
 ```
+
+## Android app
+
+`veeran-app/` packages the same client as an installable Android app — one copy of the
+UI, built by Vite and synced into a Capacitor shell (`webDir` points at
+`../client/dist`). See [veeran-app/README.md](veeran-app/README.md) for the build.
+
+```bash
+cd veeran-app && npm run apk:debug     # -> android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+The app ships the interface, not the data, so it needs the API on the network:
+
+- On first launch the sign-in screen asks for a **server address** (e.g.
+  `192.168.1.20:4000`), checks it against `/api/health`, and remembers it.
+- The API is then cross-site over plain HTTP, where a session cookie cannot be sent
+  (`SameSite=None` requires `Secure`). The app sends the same signed session as an
+  `Authorization: Bearer` header instead; `attachUser()` accepts either transport. A
+  browser is never issued a token — its session stays in an HTTP-only cookie it cannot
+  read — and the token is only returned to a client that identifies itself with
+  `X-Veeran-Client: native`.
+- CORS allows the shell's own origin plus private-range LAN addresses, which is how a
+  phone reaches a laptop at a venue.
+- The web view is served from `http://localhost` rather than `https://localhost`, so the
+  page and a plain-HTTP API share a scheme and the call is not blocked as mixed content.
 
 ## Where the database lives
 

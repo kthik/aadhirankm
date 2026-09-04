@@ -729,3 +729,23 @@ tbody tr[data-selected='true']:hover { background: var(--accent-soft); }
 @media (max-width: 420px) {
   .tourn-detail > div { grid-template-columns: 1fr; gap: 2px; }
 }
+
+/* Server address, asked for on the sign-in screen of the installed app: the API
+   lives on somebody's laptop at the venue, so its address is only known there. */
+.server-setup {
+  margin: 4px 0 18px;
+  padding: 15px 16px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.server-setup h3 {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.server-setup > p { font-size: 13px; margin-bottom: 12px; }
+.server-setup .actions { margin: 0 0 12px; }
+.server-setup .banner { margin-bottom: 12px; }

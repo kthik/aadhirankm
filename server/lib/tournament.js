@@ -58,14 +58,31 @@ export function autoDeactivateExpired(on = today()) {
 }
 
 /**
- * Tournaments open for registration: switched on and not yet finished, which
- * includes one that has not started - a competition takes entries before its
- * first day. Ordered soonest first, since that is what a registrant wants.
+ * Tournaments a registration form may offer. Three conditions, all required:
+ *
+ *   active   - switched on; a deactivated tournament never takes entries
+ *   not over - its end date has not passed (the end date is inclusive)
+ *   dated    - it has a start date, so a registrant can be told when it is
+ *
+ * That leaves exactly the current and future ones: a competition already under
+ * way still takes entries, one that has not started takes them in advance, and a
+ * finished one is gone. A blank end date means open-ended, so such a tournament
+ * keeps taking entries until it is switched off.
+ *
+ * Ordered soonest first, which is what a registrant scanning the list wants.
  */
-export function openTournaments() {
+export function openTournaments(on = today()) {
   return db
-    .filter('Tournaments', (t) => isRunning(t))
-    .sort((a, b) => String(a.startDate ?? '').localeCompare(String(b.startDate ?? '')));
+    .filter('Tournaments', (t) => isRunning(t, on) && Boolean(t.startDate))
+    .sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+}
+
+/**
+ * Where a tournament sits relative to today, for the label beside its name:
+ * one already under way reads differently to one still to come.
+ */
+export function phaseOf(tournament, on = today()) {
+  return String(tournament.startDate ?? '') > on ? 'upcoming' : 'current';
 }
 
 /**

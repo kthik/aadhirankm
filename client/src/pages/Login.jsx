@@ -4,6 +4,8 @@ import { useSession } from '../lib/session.jsx';
 import { useT } from '../lib/i18n.jsx';
 import { Brand, SettingsMenu } from '../components/Layout.jsx';
 import { Banner, Field } from '../components/ui.jsx';
+import ServerAddress from '../components/ServerAddress.jsx';
+import { isNativeApp, getServer } from '../lib/api.js';
 
 export default function Login() {
   const { login, modules, offline } = useSession();
@@ -14,6 +16,10 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  // Ask for the server address in the installed app until one is stored, and in
+  // any build whose configuration fetch failed against the address it has.
+  const needsServer = (isNativeApp() && !getServer()) || (offline && isNativeApp());
 
   async function submit(e) {
     e.preventDefault();
@@ -40,12 +46,15 @@ export default function Login() {
           <p>{t('auth.signInHint', 'Use the UID issued at registration.')}</p>
 
           <Banner>{error}</Banner>
-          {offline && (
+          {offline && !needsServer && (
             <Banner kind="warn">
               Cannot reach the server, so registration is unavailable and sign-in will fail. Start
               the API (npm run dev) and reload this page.
             </Banner>
           )}
+
+          {/* The installed app has no API of its own, so the address comes first. */}
+          {needsServer && <ServerAddress onSaved={() => window.location.reload()} />}
 
           <div style={{ marginTop: error ? 14 : 0 }}>
             <Field

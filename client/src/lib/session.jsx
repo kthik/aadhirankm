@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { api } from './api.js';
+import { api, setToken } from './api.js';
 
 const SessionContext = createContext(null);
 
@@ -39,12 +39,15 @@ export function SessionProvider({ children }) {
       // two apart, or a dead server looks like a deliberately stripped app.
       offline: !loading && config === null,
       async login(uid, password) {
-        const { user: u, home } = await api.post('/auth/login', { uid, password });
+        const { user: u, home, token } = await api.post('/auth/login', { uid, password });
+        // Only the native build is issued a token; the browser gets a cookie.
+        if (token) setToken(token);
         setUser(u);
         return home;
       },
       async logout() {
-        await api.post('/auth/logout');
+        await api.post('/auth/logout').catch(() => null);
+        setToken('');
         setUser(null);
       },
       async refresh() {

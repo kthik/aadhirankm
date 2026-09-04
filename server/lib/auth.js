@@ -41,8 +41,20 @@ export function readSession(token) {
   return payload.exp > Date.now() ? payload : null;
 }
 
+/**
+ * Reads the session from the cookie, falling back to a bearer token.
+ *
+ * The browser uses the cookie. The Android build cannot: its web view is served
+ * from its own origin, so the API is cross-site, and a cross-site cookie needs
+ * `SameSite=None; Secure` - which a plain-HTTP address on a venue LAN cannot
+ * satisfy. The same signed token sent as `Authorization: Bearer` carries the
+ * session instead. Identical value, identical signature check, identical expiry;
+ * only the transport differs.
+ */
 export function attachUser(req, _res, next) {
-  req.user = readSession(req.cookies?.veeran_session);
+  const header = req.get('authorization') ?? '';
+  const bearer = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : null;
+  req.user = readSession(req.cookies?.veeran_session) ?? readSession(bearer);
   next();
 }
 

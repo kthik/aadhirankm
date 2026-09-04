@@ -1,70 +1,136 @@
-# Getting Started with Create React App
+# Veeran for Android
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The Android shell. It packages the **real** Veeran client — `../client`, built by Vite —
+into an installable app; there is no second copy of the UI to keep in step.
 
-## Available Scripts
+```text
+veeran-app/
+  capacitor.config.ts   appId, app name, webDir -> ../client/dist
+  android/              the Gradle project Capacitor generates and syncs into
+```
 
-In the project directory, you can run:
+## How the app talks to the server
 
-### `npm start`
+The app ships the interface, not the data. Every screen still needs the Veeran API, so
+one machine on the network runs the server and the phone points at it.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- On first launch the sign-in screen asks for a **server address** (e.g.
+  `192.168.1.20:4000`). It is checked against `/api/health` before it is saved, then
+  remembered.
+- Because the API is then cross-site over plain HTTP, the session cannot ride in a
+  cookie. The app sends the same signed session as an `Authorization: Bearer` header
+  instead; the browser build still uses its HTTP-only cookie.
+- The web view is served from `http://localhost` rather than `https://localhost`, so the
+  page and the API share a scheme and the web view does not block the call as mixed
+  content.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+**Start the server so the phone can see it.** Bind to all interfaces and allow the app's
+origin:
 
-### `npm test`
+```bash
+# on the machine running the server
+npm run dev
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Find its LAN address with `ipconfig` (the IPv4 address of your Wi-Fi adapter) and use
+that plus port `4000` in the app. Phone and server must be on the same network, and the
+firewall must allow inbound TCP 4000.
 
-### `npm run build`
+## Build the APK
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### One command, once the toolchain is installed
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+cd veeran-app
+npm run apk:debug
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+That builds the client, syncs it into the Android project, and runs Gradle. The result:
 
-### `npm run eject`
+```text
+veeran-app/android/app/build/outputs/apk/debug/app-debug.apk
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Copy it to the phone and open it — Android will ask you to allow installing from this
+source. A debug APK is signed with the local debug key, which is fine for testing and
+cannot be published to Play.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### What the toolchain is
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| Needs | Version | Why |
+| --- | --- | --- |
+| JDK | 21 (Temurin or Microsoft) | Gradle runs on it |
+| Android SDK platform | 36 | `compileSdkVersion` in `android/variables.gradle` |
+| Android SDK build-tools | 36.x | compiles and packages |
+| Android platform-tools | any | `adb`, for installing over USB |
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+`minSdkVersion` is 24, so the app installs on Android 7.0 and later.
 
-## Learn More
+Set `JAVA_HOME` and `ANDROID_HOME` (or `sdk.dir` in `android/local.properties`) before
+running Gradle.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Option A — Android Studio (simplest)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Install Android Studio. Its setup wizard installs the JDK, SDK 36 and build-tools.
+2. `cd veeran-app && npm run sync` — builds the client and copies it in.
+3. `npm run open` — opens the `android/` project in Android Studio.
+4. **Build → Build Bundle(s) / APK(s) → Build APK(s)**, then use the "locate" link in the
+   notification.
 
-### Code Splitting
+To run it straight onto a plugged-in phone with USB debugging on, press ▶ instead.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Option B — command-line tools only (no IDE)
 
-### Analyzing the Bundle Size
+```bash
+# 1. JDK 21 — install Temurin, then:
+export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-21..."
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+# 2. Android command-line tools: unzip to e.g. C:\Android\cmdline-tools\latest
+export ANDROID_HOME="/c/Android"
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
-### Making a Progressive Web App
+# 3. SDK packages (accepts the SDK licence)
+sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# 4. Build
+cd veeran-app && npm run apk:debug
+```
 
-### Advanced Configuration
+### Option C — GitHub Actions (nothing installed locally)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+`.github/workflows/android.yml` builds the APK on every push and on demand, and uploads
+it as a downloadable artifact. Push the repo, open **Actions → Build Android APK → Run
+workflow**, then download `veeran-debug-apk` from the finished run.
 
-### Deployment
+## Install on the phone
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+| Route | Steps |
+| --- | --- |
+| File transfer | Copy `app-debug.apk` to the phone, tap it in Files, allow "install unknown apps" for that app |
+| USB | `adb install -r android/app/build/outputs/apk/debug/app-debug.apk` |
 
-### `npm run build` fails to minify
+Then open **Veeran**, enter the server address, and sign in with the UID you would use in
+the browser.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## A release build
+
+`npm run apk:release` produces an unsigned release APK. To install or publish it you need
+your own keystore:
+
+```bash
+keytool -genkey -v -keystore veeran.keystore -alias veeran \
+        -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Reference it from `android/app/build.gradle` in a `signingConfigs` block, or sign the
+output with `apksigner`. Keep the keystore and its passwords out of the repository — an
+app can never be updated on Play with a different key.
+
+## Notes
+
+- Re-run `npm run sync` after any change to `client/` — the APK carries a snapshot of the
+  build, not a live link to it.
+- Bump `versionCode` and `versionName` in `android/app/build.gradle` for each build you
+  hand to someone, or you will not be able to tell two APKs apart on a phone.
+- The Create React App files this folder started as (`src/`, `public/`, `build/`) are no
+  longer used by the build and can be deleted.

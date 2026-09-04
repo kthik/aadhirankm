@@ -3,3 +3,6 @@ dist/
 .env
 server/data/*.json
 !server/data/.gitkeep
+
+# built APKs
+apk/

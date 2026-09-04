@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="What the Veeran Silambam platform does, who may do it, and the rules it enforces.">
+<title>Veeran Functional Specification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+Veeran Functional Specification</title>
+
+<style>
+  /* ============================================================
+     Tokens — adopted from the app's own design system
+     (client/src/styles.css), so the documentation reads as part
+     of the product. Light on bare :root; night redefined twice so
+     an explicit choice wins in either direction.
+     ============================================================ */
+  :root {
+    color-scheme: light;
+    --bg: #eef1f7;
+    --card: #ffffff;
+    --card-2: rgba(15, 23, 42, 0.045);
+    --line: rgba(15, 23, 42, 0.12);
+    --line-strong: rgba(15, 23, 42, 0.22);
+    --text: #10192b;
+    --muted: #5b6880;
+    --accent: #b04f19;
+    --accent-soft: rgba(176, 79, 25, 0.12);
+    --accent-2: #0f6c8c;
+    --accent-2-soft: rgba(15, 108, 140, 0.11);
+    --ok: #12794f;
+    --warn: #9a5a06;
+    --warn-soft: rgba(154, 90, 6, 0.12);
+    --danger: #c02434;
+    --danger-soft: rgba(192, 36, 52, 0.1);
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      color-scheme: dark;
+      --bg: #070a12;
+      --card: #121722;
+      --card-2: rgba(255, 255, 255, 0.06);
+      --line: rgba(255, 255, 255, 0.11);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --text: #eef2fb;
+      --muted: #98a4be;
+      --accent: #ff8a3d;
+      --accent-soft: rgba(255, 138, 61, 0.15);
+      --accent-2: #38e8ff;
+      --accent-2-soft: rgba(56, 232, 255, 0.12);
+      --ok: #3ddc97;
+      --warn: #ffb066;
+      --warn-soft: rgba(255, 176, 102, 0.14);
+      --danger: #ff5f6d;
+      --danger-soft: rgba(255, 95, 109, 0.13);
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #070a12;
+    --card: #121722;
+    --card-2: rgba(255, 255, 255, 0.06);
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.22);
+    --text: #eef2fb;
+    --muted: #98a4be;
+    --accent: #ff8a3d;
+    --accent-soft: rgba(255, 138, 61, 0.15);
+    --accent-2: #38e8ff;
+    --accent-2-soft: rgba(56, 232, 255, 0.12);
+    --ok: #3ddc97;
+    --warn: #ffb066;
+    --warn-soft: rgba(255, 176, 102, 0.14);
+    --danger: #ff5f6d;
+    --danger-soft: rgba(255, 95, 109, 0.13);
+    --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 20px 96px;
+  }
+
+  @media (min-width: 1040px) {
+    .wrap { grid-template-columns: 232px minmax(0, 1fr); gap: 56px; padding: 0 32px 120px; }
+  }
+
+  /* ------------------------------------------------------ masthead -- */
+
+  header.masthead {
+    grid-column: 1 / -1;
+    padding: 60px 0 34px;
+    border-bottom: 2px solid var(--text);
+    margin-bottom: 44px;
+  }
+
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.02;
+    letter-spacing: -0.028em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-size: 19.5px;
+    color: var(--muted);
+    max-width: 60ch;
+    margin: 0 0 26px;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 30px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .facts b { color: var(--text); font-weight: 500; }
+
+  /* ----------------------------------------------------------- nav -- */
+
+  nav.toc { display: none; }
+
+  @media (min-width: 1040px) {
+    nav.toc {
+      display: block;
+      align-self: start;
+      position: sticky;
+      top: 28px;
+      max-height: calc(100vh - 56px);
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+    nav.toc h2 {
+      font-family: var(--display);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 12px;
+      font-weight: 600;
+    }
+    nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+    nav.toc a {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 4px;
+      padding: 5px 8px 5px 0;
+      font-family: var(--display);
+      font-size: 13.5px;
+      line-height: 1.35;
+      color: var(--muted);
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    nav.toc a span { font-family: var(--mono); font-size: 11.5px; opacity: 0.75; padding-top: 2px; }
+    nav.toc a:hover { color: var(--accent); background: var(--accent-soft); }
+  }
+
+  /* ------------------------------------------------------- content -- */
+
+  main { min-width: 0; }
+
+  section.spec { margin: 0 0 64px; scroll-margin-top: 22px; }
+
+  h2.sec {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 27px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 13px;
+    align-items: baseline;
+    text-wrap: balance;
+  }
+  h2.sec .num {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0;
+  }
+
+  .sec-note {
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0 0 24px;
+    max-width: 66ch;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 16.5px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    margin: 32px 0 10px;
+  }
+
+  p, ul, ol { max-width: 68ch; }
+  p { margin: 0 0 15px; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin: 0 0 7px; }
+  li::marker { color: var(--accent); }
+
+  code, .k {
+    font-family: var(--mono);
+    font-size: 0.855em;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
+
+  strong { font-weight: 600; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  /* --------------------------------------------------------- table -- */
+
+  .t-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    margin: 0 0 22px;
+    max-width: 100%;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td {
+    text-align: left;
+    padding: 11px 15px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--display);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--card-2);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }
+  .num-col { font-variant-numeric: tabular-nums; }
+
+  /* ----------------------------------------------------- callouts -- */
+
+  .rule {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    margin: 0 0 22px;
+    padding: 15px 18px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 11px 11px 0;
+    background: var(--card);
+    max-width: 72ch;
+  }
+  .rule .tag {
+    font-family: var(--display);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+  .rule p:last-child { margin: 0; }
+  .rule.guard { border-left-color: var(--danger); }
+  .rule.guard .tag { color: var(--danger); }
+  .rule.note { border-left-color: var(--accent-2); }
+  .rule.note .tag { color: var(--accent-2); }
+
+  /* -------------------------------------------------------- pills -- */
+
+  .pill {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pill.on { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+  .pill.off { color: var(--muted); background: var(--card-2); border-color: var(--line); }
+  .pill.sa { color: var(--accent); background: var(--accent-soft); }
+  .pill.adm { color: var(--accent-2); background: var(--accent-2-soft); }
+
+  /* ------------------------------------------------------- layout -- */
+
+  .cols { display: grid; gap: 16px; margin: 0 0 22px; }
+  @media (min-width: 700px) { .cols.two { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .card h4 {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .card .who { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .card ul { margin: 0; padding-left: 19px; font-size: 15px; }
+  .card li { margin-bottom: 5px; }
+
+  /* Vertical hairline down a flow — the staff the whole sport turns on. */
+  .flow {
+    margin: 0 0 22px;
+    padding-left: 26px;
+    border-left: 2px solid var(--line-strong);
+    max-width: 70ch;
+  }
+  .flow ol { list-style: none; margin: 0; padding: 0; counter-reset: f; }
+  .flow li {
+    position: relative;
+    margin: 0 0 14px;
+    font-size: 15.5px;
+    counter-increment: f;
+  }
+  .flow li::before {
+    content: counter(f);
+    position: absolute;
+    left: -38px;
+    top: 1px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+
+  footer {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--line);
+    margin-top: 20px;
+    padding-top: 22px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 26px;
+  }
+
+  a:focus-visible, nav.toc a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Functional specification · v1.0</p>
+    <h1>Veeran Functional Specification</h1>
+    <p class="standfirst">
+      What the Silambam competition platform does, who may do it, and the rules it enforces —
+      written against the running system, one section per subsystem.
+    </p>
+    <div class="facts">
+      <span><b>6</b> roles</span>
+      <span><b>13</b> modules</span>
+      <span><b>15</b> collections</span>
+      <span>Storage <b>JSON files</b></span>
+      <span>Companion doc <b>Veeran Operating Manual</b></span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1"><span>01</span>System overview</a></li>
+      <li><a href="#s2"><span>02</span>Roles and access</a></li>
+      <li><a href="#s3"><span>03</span>Modules and configuration</a></li>
+      <li><a href="#s4"><span>04</span>Data model</a></li>
+      <li><a href="#s5"><span>05</span>Identity and registration</a></li>
+      <li><a href="#s6"><span>06</span>Tournaments</a></li>
+      <li><a href="#s7"><span>07</span>Bouts and running order</a></li>
+      <li><a href="#s8"><span>08</span>Scoring</a></li>
+      <li><a href="#s9"><span>09</span>Champions and medals</a></li>
+      <li><a href="#s10"><span>10</span>Analytics</a></li>
+      <li><a href="#s11"><span>11</span>Database location</a></li>
+      <li><a href="#s12"><span>12</span>Backup, restore, delete</a></li>
+      <li><a href="#s13"><span>13</span>Audit log</a></li>
+      <li><a href="#s14"><span>14</span>Validation rules</a></li>
+      <li><a href="#s15"><span>15</span>Interface behaviour</a></li>
+      <li><a href="#s16"><span>16</span>API surface</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- ============================================ 1 ============ -->
+    <section class="spec" id="s1">
+      <h2 class="sec"><span class="num">01</span>System overview</h2>
+      <p class="sec-note">
+        Veeran runs a Silambam competition end to end: registration, event entry, bout
+        assignment, judging, results, medals and reporting.
+      </p>
+
+      <p>
+        The platform is a React single-page app talking to an Express API. There is no database
+        server: each table is a JSON file on disk, written through a temp file and an atomic
+        rename so an interrupted write cannot leave a half-written document. That makes the
+        system portable enough to run on a laptop at a venue with no infrastructure, and is the
+        reason the database can live in a synced Google Drive folder (§11).
+      </p>
+
+      <h3>Design decisions that shape every feature</h3>
+      <ul>
+        <li>
+          <strong>Nothing derivable is stored.</strong> A competitor's age band, whether they are
+          scored, their running order and a bout's completion state are all computed on read from
+          the entries and the filed score sheets. No status field can go stale, and editing an age
+          range re-categorises everyone immediately.
+        </li>
+        <li>
+          <strong>Features are switchable.</strong> Thirteen modules can be turned off in one
+          config file, and each is enforced on both sides — the API 404s the routes, the interface
+          drops the tabs (§3).
+        </li>
+        <li>
+          <strong>Every record belongs to a tournament.</strong> One tag carries scoping,
+          filtered reporting and filtered backup (§6).
+        </li>
+        <li>
+          <strong>Destructive actions are separate, explicit and logged.</strong> Backup never
+          deletes; deleting reports what it will remove and demands confirmation; moving the
+          database demands the operator's own password (§11, §12).
+        </li>
+      </ul>
+
+      <div class="rule note">
+        <span class="tag">Scale</span>
+        <p>
+          The JSON layer suits a single API process. It is not safe for several server processes
+          writing the same folder at once — including two machines pointed at one Drive folder,
+          where Drive resolves a collision as a conflict copy rather than a merge.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================ 2 ============ -->
+    <section class="spec" id="s2">
+      <h2 class="sec"><span class="num">02</span>Roles and access</h2>
+      <p class="sec-note">
+        Six roles. Each sign-in is a UID plus password; the session is a signed HTTP-only cookie
+        valid for eight hours.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>UID</th><th>Home</th><th>Can do</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill sa">Super Admin</span></td>
+              <td><code>SA001</code></td>
+              <td><code>/super-admin</code></td>
+              <td>Everything. Owns events, tournaments, admin accounts, the database location,
+                  restore and filtered deletes. Overrides tournament restrictions.</td>
+            </tr>
+            <tr>
+              <td><span class="pill adm">Admin</span></td>
+              <td><code>AD00n</code></td>
+              <td><code>/admin</code></td>
+              <td>Runs the competition: academies, competitors, bouts, judges, bout assignment,
+                  analytics, full backup. May be restricted to named tournaments.</td>
+            </tr>
+            <tr>
+              <td>Judge</td>
+              <td><code>J00n</code></td>
+              <td><code>/judge</code></td>
+              <td>Sees only their own bouts; scores the competitors in them.</td>
+            </tr>
+            <tr>
+              <td>Academy</td>
+              <td><code>A00n</code></td>
+              <td><code>/academy</code></td>
+              <td>Registers its own competitors (single or bulk), sees its squad's progress and
+                  podium, resets its own password.</td>
+            </tr>
+            <tr>
+              <td>Academy participant</td>
+              <td><code>P00n</code></td>
+              <td><code>/participant</code></td>
+              <td>Sees their own entries, results and score breakdown; edits their profile.</td>
+            </tr>
+            <tr>
+              <td>Individual</td>
+              <td><code>P00n</code></td>
+              <td><code>/participant</code></td>
+              <td>As above, for a competitor entering without an academy.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Identity rules</h3>
+      <ul>
+        <li>UIDs are sequential per entity with a configured prefix — <code>A001</code>,
+            <code>P001</code>, <code>J001</code>, <code>E001</code>, <code>B001</code>,
+            <code>T001</code>. They are derived by scanning existing rows, not from a counter, so
+            restoring a snapshot cannot desynchronise the sequence.</li>
+        <li>New accounts get the configured default password (<code>pass@123</code>). Anyone still
+            on it sees a prompt to change it.</li>
+        <li>Passwords are stored as scrypt hashes. A reset returns the new password once, for the
+            admin to read out; an existing password can never be read back.</li>
+        <li>Deactivating a judge or academy blocks sign-in without deleting their records.</li>
+      </ul>
+
+      <div class="rule guard">
+        <span class="tag">Deployment</span>
+        <p>
+          Set <code>VEERAN_SECRET</code> in the environment before deploying. Without it session
+          cookies are signed with a fixed development key.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================ 3 ============ -->
+    <section class="spec" id="s3">
+      <h2 class="sec"><span class="num">03</span>Modules and configuration</h2>
+      <p class="sec-note">
+        <code>config/app.config.json</code> is the single source of truth for which features
+        exist, who may see them, and the numbers the validators use. It is re-read every second,
+        so a change takes effect without a restart.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Module</th><th>State</th><th>What switching it off removes</th></tr></thead>
+          <tbody>
+            <tr><td><code>academyRegistration</code></td><td><span class="pill on">on</span></td><td>Public academy sign-up page and its link</td></tr>
+            <tr><td><code>individualRegistration</code></td><td><span class="pill on">on</span></td><td>Public individual sign-up page and its link</td></tr>
+            <tr><td><code>eventRegistration</code></td><td><span class="pill on">on</span></td><td>Event entry on registration forms</td></tr>
+            <tr><td><code>bulkUpload</code></td><td><span class="pill on">on</span></td><td>The academy's spreadsheet importer</td></tr>
+            <tr><td><code>judging</code></td><td><span class="pill on">on</span></td><td>Bouts, judges, running order</td></tr>
+            <tr><td><code>scoring</code></td><td><span class="pill on">on</span></td><td>Score sheets and results</td></tr>
+            <tr><td><code>analytics</code></td><td><span class="pill on">on</span></td><td>All dashboard rollups, including the Super Admin overview</td></tr>
+            <tr><td><code>realtime</code></td><td><span class="pill off">off</span></td><td>Live push updates (not implemented)</td></tr>
+            <tr><td><code>multiLanguage</code></td><td><span class="pill on">on</span></td><td>The English / Tamil switch</td></tr>
+            <tr><td><code>backupRestore</code></td><td><span class="pill on">on</span></td><td>Export, restore and filtered delete</td></tr>
+            <tr><td><code>tournaments</code></td><td><span class="pill on">on</span></td><td>Tournament admin, scoping, and the registration tournament picker</td></tr>
+            <tr><td><code>adminManagement</code></td><td><span class="pill on">on</span></td><td>Admin account administration</td></tr>
+            <tr><td><code>systemLogs</code></td><td><span class="pill on">on</span></td><td>The audit log viewer</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Other configured values</h3>
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Value</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><code>app.defaultPassword</code></td><td><code>pass@123</code></td><td>Issued to every new account</td></tr>
+            <tr><td><code>scoring.maxCategories</code></td><td class="num-col">5</td><td>Cap on active score categories</td></tr>
+            <tr><td><code>scoring.minScore</code> / <code>maxScore</code></td><td class="num-col">0 / 10</td><td>Per-category score range</td></tr>
+            <tr><td><code>scoring.rankingPositions</code></td><td><code>1, 2, 3</code></td><td>Which positions count as podium</td></tr>
+            <tr><td><code>validation.phonePattern</code></td><td><code>^[6-9][0-9]{9}$</code></td><td>Indian 10-digit mobile</td></tr>
+            <tr><td><code>validation.minAge</code> / <code>maxAge</code></td><td class="num-col">4 / 80</td><td>Accepted competitor ages</td></tr>
+            <tr><td><code>tournaments.autoDeactivateAfterEndDate</code></td><td><code>true</code></td><td>Closes a tournament once its end date passes</td></tr>
+            <tr><td><code>tournaments.checkIntervalHours</code></td><td class="num-col">24</td><td>How often that sweep runs</td></tr>
+            <tr><td><code>storage.*</code></td><td>see §11</td><td>Where the database lives</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================ 4 ============ -->
+    <section class="spec" id="s4">
+      <h2 class="sec"><span class="num">04</span>Data model</h2>
+      <p class="sec-note">
+        Fifteen collections, one JSON file each. Seven of them carry a <code>tournamentId</code>.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Collection</th><th>Key</th><th>Holds</th><th>Tagged</th></tr></thead>
+          <tbody>
+            <tr><td><code>Academy</code></td><td><code>academyId</code></td><td>Academy, coach, phone, location, address</td><td>yes</td></tr>
+            <tr><td><code>Participants</code></td><td><code>participantId</code></td><td>Competitor, father's name, age, mobile, address, events entered, academy (null for an individual)</td><td>yes</td></tr>
+            <tr><td><code>Judges</code></td><td><code>judgeId</code></td><td>Judge and the bouts they hold (<code>boutIds</code>)</td><td>yes</td></tr>
+            <tr><td><code>BoutMaster</code></td><td><code>boutId</code></td><td>Bout, its judge, optional event and age category</td><td>yes</td></tr>
+            <tr><td><code>BoutEntries</code></td><td><code>entryId</code></td><td>One competitor in one bout, with a queue number</td><td>yes</td></tr>
+            <tr><td><code>Scores</code></td><td><code>scoreId</code></td><td>One judge's sheet: per-category scores, total, position</td><td>yes</td></tr>
+            <tr><td><code>Medals</code></td><td><code>medalId</code></td><td>A podium place and its handover record</td><td>yes</td></tr>
+            <tr><td><code>LoginMaster</code></td><td><code>uid</code></td><td>Credentials, role, ref id, active flag, admin tournament scope</td><td>—</td></tr>
+            <tr><td><code>EventMaster</code></td><td><code>eventId</code></td><td>Competition events and their active state</td><td>—</td></tr>
+            <tr><td><code>AgeCategory</code></td><td><code>ageCategoryId</code></td><td>Non-overlapping age ranges</td><td>—</td></tr>
+            <tr><td><code>ScoreCategory</code></td><td><code>categoryId</code></td><td>Scored criteria, max five active</td><td>—</td></tr>
+            <tr><td><code>PositionMaster</code></td><td><code>positionId</code></td><td>Placings and non-results</td><td>—</td></tr>
+            <tr><td><code>Tournaments</code></td><td><code>tournamentId</code></td><td>Name, dates, location, venue address, status</td><td>—</td></tr>
+            <tr><td><code>SystemLogs</code></td><td><code>logId</code></td><td>Append-only audit trail</td><td>—</td></tr>
+            <tr><td><code>Backups</code></td><td><code>backupId</code></td><td>Export history and scope</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Seeded reference data</h3>
+      <div class="cols two">
+        <div class="card">
+          <h4>Age categories</h4>
+          <p class="who">Derived from age, never stored</p>
+          <ul>
+            <li>Sub-Junior — 4 to 10</li>
+            <li>Junior — 11 to 15</li>
+            <li>Cadet — 16 to 18</li>
+            <li>Senior — 19 to 35</li>
+            <li>Veteran — 36 to 80</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Score sheet</h4>
+          <p class="who">Five categories, six positions</p>
+          <ul>
+            <li>Categories: Position, Power, Speed, Stability, Style</li>
+            <li>Placings: 1, 2, 3, 4</li>
+            <li>Non-results: Disqualified, Absent</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rule">
+        <span class="tag">Relationship</span>
+        <p>
+          A competitor entered in several events sits in <strong>one bout per event</strong>, so
+          the competitor-to-bout link is a row in <code>BoutEntries</code> rather than a field on
+          the competitor. Scores live in their own collection keyed by judge and competitor, so
+          one judge's sheet can never collide with another's and registration data is never
+          touched by scoring.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================ 5 ============ -->
+    <section class="spec" id="s5">
+      <h2 class="sec"><span class="num">05</span>Identity and registration</h2>
+      <p class="sec-note">
+        Four ways a competitor enters the system. All of them issue a UID and the default
+        password, shown once on a confirmation card.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Route</th><th>Who starts it</th><th>Tournament</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Academy sign-up</td><td>Coach, no account needed</td><td>Chosen on the form</td>
+              <td>Creates the academy and its <code>ACADEMY</code> login. Same name + phone twice is rejected.</td>
+            </tr>
+            <tr>
+              <td>Individual sign-up</td><td>Competitor, no account needed</td><td>Chosen on the form</td>
+              <td>Creates the competitor with no academy and an <code>INDIVIDUAL</code> login.</td>
+            </tr>
+            <tr>
+              <td>Academy adds one</td><td>Signed-in academy</td><td>Inherited from the academy</td>
+              <td>Mobile, address and location pre-fill from the academy and stay editable.</td>
+            </tr>
+            <tr>
+              <td>Academy bulk upload</td><td>Signed-in academy</td><td>Inherited from the academy</td>
+              <td>Spreadsheet, up to 500 rows, all-or-nothing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The tournament picker</h3>
+      <p>
+        Both public forms open with <strong>Registering for</strong>, listing tournaments that are
+        active, dated and not finished — the current and upcoming competitions, never a closed
+        one. Each option says whether it is on now or when it starts, and selecting one reveals
+        its dates, location and venue address so two competitions cannot be confused.
+      </p>
+      <ul>
+        <li>An unchosen, unknown, ended or deactivated tournament is a field error, not a silent
+            fallback — filing an entry under the wrong competition is worse than asking again.</li>
+        <li>With the tournaments module off, or nothing open, the field disappears and entries are
+            filed under the current tournament.</li>
+        <li>A blank end date means open-ended: such a tournament keeps taking entries until it is
+            switched off.</li>
+      </ul>
+
+      <h3>Bulk upload rules</h3>
+      <ul>
+        <li>The template carries an <em>Event Codes</em> reference sheet; the Events column accepts
+            codes, full event names, or a comma/semicolon list of either.</li>
+        <li>Blank Mobile, Address or Location inherit the academy's.</li>
+        <li>Import is all-or-nothing: if any row fails, nothing is saved and every bad row comes
+            back with its spreadsheet row number and per-field errors.</li>
+        <li>Duplicates within the academy (same name and mobile) are rejected.</li>
+        <li>The spreadsheet is parsed in the browser and posted as JSON, so the API needs no
+            upload handling.</li>
+      </ul>
+
+      <h3>Forgot UID</h3>
+      <p>
+        Recovery requires academy name, coach name and phone to all match. A partial match returns
+        the same "contact an Admin" answer as no match, so the endpoint cannot be used to
+        enumerate academies.
+      </p>
+    </section>
+
+    <!-- ============================================ 6 ============ -->
+    <section class="spec" id="s6">
+      <h2 class="sec"><span class="num">06</span>Tournaments</h2>
+      <p class="sec-note">
+        A tournament is the unit of scoping, reporting and filtered backup. Academies,
+        competitors, judges, bouts, entries, scores and medals all carry its id.
+      </p>
+
+      <ul>
+        <li><strong>Fields.</strong> Name, description, location, venue address, start date, end
+            date, status. The venue address is what a competitor sees when they pick it on the
+            registration form.</li>
+        <li><strong>Auto-close.</strong> A tournament switches itself off once its end date
+            passes. The sweep runs on boot, on a timer, and on demand. End dates are inclusive —
+            one ending today is still running.</li>
+        <li><strong>Reactivation.</strong> Switching a finished tournament back on is refused
+            rather than quietly undone by the next sweep; extend the end date instead.</li>
+        <li><strong>Admin scope.</strong> An admin can be narrowed to named tournaments; their
+            dashboards, lists and analytics then show only those. An admin with none listed is
+            unrestricted. Super Admin always overrides the restriction.</li>
+        <li><strong>Migration safety.</strong> On first boot a tournament is seeded and every
+            untagged row is tagged with it, so enabling this over a running competition orphans
+            nothing.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================ 7 ============ -->
+    <section class="spec" id="s7">
+      <h2 class="sec"><span class="num">07</span>Bouts and running order</h2>
+      <p class="sec-note">
+        A bout is a judged group. Nothing about order or state is stored — it is derived from the
+        entries plus the filed sheets on every read.
+      </p>
+
+      <h3>Assignment</h3>
+      <ul>
+        <li>A bout belongs to <strong>exactly one judge</strong>. Assigning a bout that is already
+            held is refused until the admin confirms; confirming clears the previous judge's link
+            first, so a bout is never held twice.</li>
+        <li>A bout may be scoped to an event and an age category. Its eligible list is then the
+            competitors matching both who are not already in another bout for that event.</li>
+        <li>A competitor may hold <strong>at most one bout per event</strong> — two would mean
+            being judged twice for it.</li>
+        <li>A judge may hold several bouts and gets one tab per bout.</li>
+      </ul>
+
+      <h3>Derived state</h3>
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>State</th><th>Meaning</th><th>Judge sees</th></tr></thead>
+          <tbody>
+            <tr><td><code>scored</code></td><td>This judge has filed a sheet for them</td><td>Row with result, sorted to the bottom</td></tr>
+            <tr><td><code>ready</code></td><td>This is their active bout</td><td>Clickable row</td></tr>
+            <tr><td><code>blocked</code></td><td>They are due in another bout first</td><td><em>In other performance</em>, greyed out</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>Active bout.</strong> Of a competitor's unscored entries, the one with the lowest
+        queue number runs first, the lower bout id breaking a tie. Both are fixed at assignment,
+        so a row cannot flip state because somebody else was scored.
+      </p>
+      <p>
+        <strong>Order within a bout.</strong> Competitors entered in more events come first, so
+        they have time to prepare for their next event; then queue number; scored rows drop to the
+        bottom.
+      </p>
+
+      <div class="rule guard">
+        <span class="tag">Enforced</span>
+        <p>
+          The block is not only visual. <code>POST /api/scores</code> refuses a sheet for a
+          competitor whose active bout is elsewhere, so a stale page cannot score around it.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================ 8 ============ -->
+    <section class="spec" id="s8">
+      <h2 class="sec"><span class="num">08</span>Scoring</h2>
+      <p class="sec-note">
+        One sheet per judge per competitor per bout. Submitting doubles as revising.
+      </p>
+      <ul>
+        <li>Categories load from <code>ScoreCategory</code> — at most five active — and each
+            accepts 0 to 10. The total is the sum.</li>
+        <li>A position is chosen from <code>PositionMaster</code>: 1 to 4, or Disqualified or
+            Absent.</li>
+        <li>Re-opening a scored competitor pre-fills their sheet, so a correction is the same
+            action as the original entry.</li>
+        <li>A competitor counts as complete once <em>any</em> judge has filed a sheet for them.</li>
+        <li>Scoring never writes to the competitor's registration row.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================ 9 ============ -->
+    <section class="spec" id="s9">
+      <h2 class="sec"><span class="num">09</span>Champions and medals</h2>
+      <p class="sec-note">
+        Podium places grouped by bout, with gold, silver and bronze totals.
+      </p>
+      <ul>
+        <li>Each winner carries an <strong>issued</strong> checkbox. Ticking it asks for
+            confirmation, then records who handed the medal over and when, and locks the box.</li>
+        <li>Issuing is deliberately one-way: handing over a medal is a physical act, not a
+            toggle.</li>
+        <li>The handover lives in its own <code>Medals</code> record, so a judge revising a sheet
+            cannot undo it.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================ 10 =========== -->
+    <section class="spec" id="s10">
+      <h2 class="sec"><span class="num">10</span>Analytics</h2>
+      <p class="sec-note">
+        Every dashboard opens on figures rather than a form. All of them are computed per request
+        from competitors and their filed sheets, so no figure can disagree with the table it came
+        from.
+      </p>
+
+      <div class="cols two">
+        <div class="card">
+          <h4>Super Admin — Overview</h4>
+          <p class="who">One filter bar drives every panel</p>
+          <ul>
+            <li>Filters: tournament, event, age category, academy, registered-between dates</li>
+            <li>Headline totals, then progress split by event, age band and academy</li>
+            <li>Cumulative registered-versus-scored trend</li>
+            <li>A card per tournament with the same measures for that tournament alone</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Admin</h4>
+          <p class="who">Overview, List view, Categories, Champions</p>
+          <ul>
+            <li>Participants, events, bouts, judges active, completion %, average score</li>
+            <li>Event cards, the bout completion grid, per-judge throughput</li>
+            <li>Filtered list with CSV export that matches the screen exactly</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Academy</h4>
+          <p class="who">Its own squad only</p>
+          <ul>
+            <li>Squad size, entries, how many are in a bout, scored %, medals, average</li>
+            <li>Entries per event with a scored / waiting split</li>
+            <li>The academy's podium</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Judge and competitor</h4>
+          <p class="who">Personal scope</p>
+          <ul>
+            <li>Judge: assigned, completed and blocked across their bouts, then per bout</li>
+            <li>Competitor: events entered, judged, medals, best position, age group, and a
+                per-category breakdown for each judged event</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        <strong>Drill-downs.</strong> Clicking an academy, competitor, judge or age category opens
+        their full record — squad and sign-in state, event history and every judge's sheet, a
+        judge's bouts and filed sheets, or everyone in an age band. Competitors and judges are
+        editable from the drawer.
+      </p>
+      <p>
+        <strong>One row per event.</strong> In the filtered list, a competitor entered in several
+        events gets one row per event, all sharing their registration ID, each showing that
+        event's own bout and result. Filtering by event narrows to that event's rows.
+      </p>
+    </section>
+
+    <!-- ============================================ 11 =========== -->
+    <section class="spec" id="s11">
+      <h2 class="sec"><span class="num">11</span>Database location</h2>
+      <p class="sec-note">
+        One switch decides where the JSON collections live. Super Admin can change it from the
+        Database tab; the running server repoints without a restart.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Driver</th><th>The database is</th><th>Local folder is</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>local</code></td>
+              <td><code>storage.local.dataDir</code> on this machine (default <code>server/data</code>)</td>
+              <td>the database itself</td>
+            </tr>
+            <tr>
+              <td><code>gdrive</code></td>
+              <td><code>storage.gdrive.dataDir</code> inside the synced Google Drive folder, so
+                  several machines share one database</td>
+              <td>a read-through cache of it</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Drive plus local cache</h3>
+      <ul>
+        <li><strong>Reads</strong> are served from the local copy; the Drive file's timestamp is
+            checked first and a newer Drive copy is pulled down, which is how another machine's
+            change is picked up.</li>
+        <li><strong>Writes</strong> go to Drive first, then mirror into the cache. A failed Drive
+            write fails the request — an accepted write living only in the cache would vanish on
+            the next refresh. A failed cache write only warns, because a stale cache self-corrects.</li>
+        <li><strong>Drive offline</strong> leaves reads working from the cache and refuses writes,
+            so the app degrades to read-only instead of going down.</li>
+        <li>Sign-in to Drive is handled by Google Drive for desktop at the operating-system level;
+            the app holds no Google credentials. The account field on the Database tab is a label
+            for operators, not a login.</li>
+      </ul>
+
+      <h3>Changing location safely</h3>
+      <div class="flow">
+        <ol>
+          <li><strong>Check location</strong> resolves the destination and reports what is already
+              in it. Nothing is written.</li>
+          <li><strong>Save location</strong> opens a dialog naming the source, the destination and
+              its contents, and asks whether to copy the current data across.</li>
+          <li>The change applies only after the acting Super Admin re-enters their own password.</li>
+        </ol>
+      </div>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Copy decision</th><th>Destination state</th><th>Outcome</th></tr></thead>
+          <tbody>
+            <tr><td>Copy</td><td>empty</td><td>All collections written across, then the switch</td></tr>
+            <tr><td>Copy</td><td>already holds data</td><td>Blocked until the "will be replaced" box is ticked</td></tr>
+            <tr><td>Don't copy</td><td>has a Super Admin login</td><td>Allowed, with an alert that the old data stays behind and is no longer read</td></tr>
+            <tr><td>Don't copy</td><td>no Super Admin login</td><td><strong>Refused</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rule guard">
+        <span class="tag">The guard</span>
+        <p>
+          After a switch, the destination must contain an active Super Admin login — either copied
+          across or already there. Otherwise nobody could sign in to administer the new location
+          and the real database would be stranded at the old path. The refusal is enforced in the
+          dialog and again on the server, and nothing is ever deleted from the old folder.
+        </p>
+      </div>
+
+      <h3>Environment overrides</h3>
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Variable</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><code>VEERAN_DB_DRIVER</code></td><td>Run on the other driver for one session</td></tr>
+            <tr><td><code>VEERAN_DATA_DIR</code></td><td>Ignore both drivers and use this folder, uncached</td></tr>
+            <tr><td><code>VEERAN_GDRIVE_DIR</code></td><td>Where the synced Drive folder is mounted</td></tr>
+            <tr><td><code>VEERAN_CONFIG_PATH</code></td><td>Where <code>app.config.json</code> itself lives</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        An override wins over the config file; the Database tab says so when one is set. Paths
+        accept absolute or project-relative forms, <code>~</code>, and <code>%VAR%</code> /
+        <code>$VAR</code>. The resolved folder is logged on boot and a missing Drive folder is
+        fatal at startup rather than silently writing a second copy of the database.
+      </p>
+    </section>
+
+    <!-- ============================================ 12 =========== -->
+    <section class="spec" id="s12">
+      <h2 class="sec"><span class="num">12</span>Backup, restore and delete</h2>
+      <p class="sec-note">
+        Export is one Excel workbook, a sheet per table. Lists and score maps are written as JSON
+        text in their cell so a round trip is lossless.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Who</th><th>Behaviour</th></tr></thead>
+          <tbody>
+            <tr><td>Full backup</td><td><span class="pill adm">Admin</span> <span class="pill sa">Super Admin</span></td><td>Every table, no filter</td></tr>
+            <tr><td>Filtered backup</td><td><span class="pill sa">Super Admin</span></td><td>By tournament, academy, competitor or date range</td></tr>
+            <tr><td>Delete a selection</td><td><span class="pill sa">Super Admin</span></td><td>Separate call, reports what it would remove, refuses without an explicit confirm</td></tr>
+            <tr><td>Restore</td><td><span class="pill sa">Super Admin</span></td><td>Preview first, then merge; duplicates skipped</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><strong>Backup and delete are separate actions.</strong> A download that also wipes
+            data on the way out is far too easy to fire by accident.</li>
+        <li><strong>They read a filter differently, on purpose.</strong> A backup of one competitor
+            carries their academy, bout and judge so the file makes sense alone; deleting that
+            competitor must not take their academy and judge with them. An academy is owned by an
+            academy or tournament filter; judges and bouts only by a tournament filter.</li>
+        <li><strong>Restore never overwrites.</strong> A row whose key already exists is left
+            alone, so a restore is safe to run twice and cannot replace work done since the backup.
+            <code>deleteBefore</code> clears matching records first for a true replace.</li>
+        <li>A failure part-way through a restore rolls every table back.</li>
+        <li>Only genuinely numeric fields (<code>age</code>, <code>total</code>,
+            <code>queueNo</code>, <code>order</code>, <code>minAge</code>, <code>maxAge</code>)
+            parse back as numbers, which keeps a mobile number from becoming an integer.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================ 13 =========== -->
+    <section class="spec" id="s13">
+      <h2 class="sec"><span class="num">13</span>Audit log</h2>
+      <p class="sec-note">
+        An append-only record of administrative actions, readable under System logs and filterable
+        by category.
+      </p>
+      <ul>
+        <li>Recorded: account creation, edits and password resets; tournament create, edit,
+            activate and deactivate; database location changes; backups, filtered deletes and
+            restores.</li>
+        <li>Not recorded: routine reads, and no password value ever — a reset records that it
+            happened, never what it was set to.</li>
+        <li>Each entry carries the acting UID, the action, a detail object and a timestamp.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================ 14 =========== -->
+    <section class="spec" id="s14">
+      <h2 class="sec"><span class="num">14</span>Validation rules</h2>
+      <p class="sec-note">
+        Validation is declarative and returns per-field errors, which is why every form can show
+        the message under the field it belongs to.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>Rule</th></tr></thead>
+          <tbody>
+            <tr><td>Academy name, coach name, competitor name, father's name</td><td>Required, at least 3 characters</td></tr>
+            <tr><td>Address</td><td>Required, at least 5 characters</td></tr>
+            <tr><td>Location</td><td>Required</td></tr>
+            <tr><td>Phone / mobile</td><td>Required, 10 digits starting 6–9</td></tr>
+            <tr><td>Age</td><td>Required integer, 4 to 80</td></tr>
+            <tr><td>Events participating</td><td>At least one, and every code must be an active event</td></tr>
+            <tr><td>Registering for</td><td>Required when a tournament is open; must be one of the open ones</td></tr>
+            <tr><td>Score per category</td><td>0 to 10</td></tr>
+            <tr><td>Tournament dates</td><td><code>YYYY-MM-DD</code>; end date not before the start</td></tr>
+            <tr><td>Age categories</td><td>Ranges must not overlap</td></tr>
+            <tr><td>Score categories</td><td>At most five active, enforced on create and re-activation</td></tr>
+            <tr><td>Password</td><td>At least 6 characters</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================ 15 =========== -->
+    <section class="spec" id="s15">
+      <h2 class="sec"><span class="num">15</span>Interface behaviour</h2>
+
+      <h3>Layout</h3>
+      <p>
+        Every dashboard is a stat row plus a section rail. At 900px and wider the rail is vertical
+        and sticky beside the content so the whole set of sections stays visible; below that it
+        folds into a horizontal scroller. A tab's content renders only while it is active, which is
+        why the spreadsheet importer's 428 kB chunk is not fetched until Bulk upload is opened.
+        Tabs whose module is off are dropped entirely.
+      </p>
+
+      <h3>Language</h3>
+      <p>
+        English and Tamil, switched under the settings gear. Interface text is translated; data is
+        not — translating a competitor's name would be wrong and translating an event name would
+        break the code that matches on it. A key with no Tamil string falls back to readable
+        English rather than showing the key.
+      </p>
+
+      <h3>Day and night</h3>
+      <p>
+        Every colour is a token declared for day, for the OS dark preference, and for an explicit
+        in-app choice, so the toggle wins in either direction and nothing below the token block
+        hard-codes a colour. All 30 text-on-background pairs clear WCAG AA at 4.5:1. Chart
+        palettes are validated per surface (adjacent colour-vision-deficiency ΔE 24.7 day, 26.8
+        night). The bout grid uses a single-hue sequential ramp rather than green/amber/red,
+        because red and green sit ΔE 4.1 apart under deuteranopia — the two states most worth
+        telling apart would have been the hardest.
+      </p>
+
+      <h3>Error surfacing</h3>
+      <p>
+        Field errors render under their field. A failed configuration fetch is reported as
+        <em>offline</em> rather than as an app with every feature switched off, because
+        <code>modules</code> arriving empty would otherwise read as a deliberately stripped
+        interface.
+      </p>
+    </section>
+
+    <!-- ============================================ 16 =========== -->
+    <section class="spec" id="s16">
+      <h2 class="sec"><span class="num">16</span>API surface</h2>
+      <p class="sec-note">
+        All routes are under <code>/api</code>. Unless noted, they require a session; module-gated
+        routes return 404 when their module is off.
+      </p>
+
+      <div class="t-wrap">
+        <table>
+          <thead><tr><th>Route</th><th>Access</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /config</code></td><td>public</td><td>Modules, roles, theme, validation and scoring limits for the app</td></tr>
+            <tr><td><code>GET /health</code></td><td>public</td><td>Liveness</td></tr>
+            <tr><td><code>POST /auth/login</code> · <code>/logout</code> · <code>GET /auth/me</code></td><td>public / session</td><td>Sign in, out, and who am I</td></tr>
+            <tr><td><code>POST /auth/change-password</code></td><td>any role</td><td>Change own password</td></tr>
+            <tr><td><code>POST /academies</code></td><td>public</td><td>Academy sign-up</td></tr>
+            <tr><td><code>GET /academies</code> · <code>/academies/me</code></td><td>admin / academy</td><td>List, or own record with roster</td></tr>
+            <tr><td><code>POST /participants/individual</code></td><td>public</td><td>Individual sign-up</td></tr>
+            <tr><td><code>POST /participants/academy</code> · <code>/participants/bulk</code></td><td>academy</td><td>Add one, or import a spreadsheet</td></tr>
+            <tr><td><code>POST /participants/assign-bout</code></td><td>admin</td><td>Bulk add or remove against a bout</td></tr>
+            <tr><td><code>GET /tournaments/open</code></td><td>public</td><td>Tournaments accepting registrations</td></tr>
+            <tr><td><code>GET /tournaments</code> · <code>POST</code> · <code>PUT</code> · <code>PATCH /:id/status</code></td><td>session / Super Admin</td><td>Read for all; changes Super Admin only</td></tr>
+            <tr><td><code>GET /events</code> · <code>POST</code> · <code>PATCH /:id</code></td><td>public read / Super Admin</td><td>Events and their active state</td></tr>
+            <tr><td><code>GET /age-categories</code> · <code>/score-categories</code> · <code>/positions</code></td><td>session</td><td>Reference data</td></tr>
+            <tr><td><code>GET /judges/bouts</code> · <code>POST /judges</code></td><td>admin</td><td>Bouts and judge administration</td></tr>
+            <tr><td><code>POST /scores</code></td><td>judge</td><td>File or revise a sheet; refuses a blocked competitor</td></tr>
+            <tr><td><code>GET /dashboard/overview</code></td><td>admin</td><td>Filtered overall, per-tournament and trend rollup</td></tr>
+            <tr><td><code>GET /dashboard/summary</code> · <code>/events</code> · <code>/bouts</code> · <code>/judges</code> · <code>/participants</code></td><td>admin</td><td>Dashboard rollups and the filtered list</td></tr>
+            <tr><td><code>GET /champions</code> · <code>POST /champions/issue</code></td><td>admin</td><td>Podium and medal handover</td></tr>
+            <tr><td><code>POST /backup</code> · <code>/backup/restore</code> · <code>/backup/delete</code></td><td>admin / Super Admin</td><td>Export, restore, filtered delete</td></tr>
+            <tr><td><code>GET /admins</code> · <code>POST</code> · <code>PUT</code> · <code>DELETE</code></td><td>Super Admin</td><td>Admin accounts and their tournament scope</td></tr>
+            <tr><td><code>GET /logs</code></td><td>Super Admin</td><td>Audit trail</td></tr>
+            <tr><td><code>GET /storage</code> · <code>POST /storage/preview</code> · <code>PUT /storage</code></td><td>Super Admin</td><td>Read, dry-run and apply the database location</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Response conventions</h3>
+      <ul>
+        <li><code>400</code> with <code>{ errors: { field: message } }</code> for validation.</li>
+        <li><code>401</code> unauthenticated, <code>403</code> wrong role, <code>404</code> missing
+            record or disabled module.</li>
+        <li><code>409</code> for a conflict that the operator can resolve — a bout already held, a
+            destination folder that already holds data, a switch that would leave no Super
+            Admin — carrying a <code>code</code> the interface uses to raise the right prompt.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>Veeran · Silambam Competition Management</span>
+      <span>Functional specification v1.0</span>
+      <span>Companion: Veeran Operating Manual</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>
