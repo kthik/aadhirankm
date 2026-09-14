@@ -29,6 +29,41 @@ Open http://localhost:5173. For a single-process production run:
 npm run build && npm start   # server serves client/dist on :4000
 ```
 
+## Deploying
+
+The server keeps its database as local JSON files (or a synced Google Drive folder), so
+it needs a host with a real, persistent filesystem — it cannot run as a Vercel
+serverless function. Split the deploy: client on Vercel, server on a host like Render,
+Railway or Fly.io.
+
+**Server** (Render/Railway/Fly/VPS):
+
+```bash
+npm --prefix server install
+npm --prefix server start   # reads PORT from the env
+```
+
+Set:
+
+| Variable | Value |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `WEB_ORIGIN` | `https://<your-vercel-domain>` — must match exactly, no trailing slash (CORS check, `server/index.js`) |
+| `VEERAN_SECRET` | a random string — signs session cookies |
+
+`NODE_ENV=production` also switches the session cookie to `SameSite=None; Secure`,
+required once the client and API are on different origins (`server/routes/auth.js`).
+
+**Client** (Vercel): set the project root to `client/` — it already has a `vercel.json`
+with the build command, output directory and an SPA rewrite for `react-router-dom`. Add:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_API_BASE` | `https://<your-server-host-domain>` |
+
+Redeploy both after setting env vars — Vite inlines `VITE_API_BASE` at build time, so a
+change to it needs a rebuild, not just a restart.
+
 ## Seeded accounts
 
 Created on first boot, password `pass@123`:
