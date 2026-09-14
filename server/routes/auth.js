@@ -8,10 +8,15 @@ import { config } from '../config.js';
 
 const router = Router();
 
+// In production the client (Vercel) and API (wherever the server is hosted) are
+// different origins, so the session cookie must be SameSite=None - which browsers
+// only honour when Secure is also set. Locally they share an origin, where Lax
+// works fine over plain http.
+const CROSS_SITE = process.env.NODE_ENV === 'production';
 const COOKIE = {
   httpOnly: true,
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production',
+  sameSite: CROSS_SITE ? 'none' : 'lax',
+  secure: CROSS_SITE,
   maxAge: 1000 * 60 * 60 * 8,
 };
 
